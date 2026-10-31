@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>De la donnée à l'indicateur</title>
+<!--
+  CLEAN DATA ARCHITECTURE — TEMPLATE DE PAGE (v3)
+  Une section = un écran, la page défile de haut en bas. Aucun chargement externe.
+  Filigrane : bloc <svg class="watermark"> juste après <body>, fixe, derrière tout le contenu.
+  Types de sections : .hero · .speakers (.grid.solo pour un seul speaker) · section simple · .split · .split.figure · .quote · .cols (.dense, .fourcols, .fivecols) · .widefig · .closing
+  Éléments : .lead · .inline-quote · .takeaway (.sm) · .example · .source (une seule source par section, sans citation dedans)
+  Fond sombre : classe .dark sur la <section>, puis en premier enfant
+  <svg class="watermark-local" aria-hidden="true"><rect width="100%" height="100%" fill="url(#wm-dark)"/></svg>
+  Teintes : data-tone="a" (turquoise → violet), "b" (violet → rose), "c" (turquoise → citron). Choix libre par section, invisible pour le public.
+  Schémas : <div class="visual fit"><img class="zoomable" src="…" alt="…"></div> — image entière, filigrane posé dessus, clic pour ouvrir la visionneuse (zoom, déplacement, Fit, Échap).
+  Ajouter .portrait pour une image plus haute que large.
+  Dissuasion de copie : sélection, clic droit et glisser désactivés ; grand marquage © sur raccourci de capture et à l'impression (bloc .tm).
+  Boutons : classe .btn (rose Substack), réservée aux appels à l'action.
+-->
+<style>
+  :root {
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --citron: #EEFA5C;
+    --menthe: #B7F69D;
+    --turquoise: #82F6EB;
+    --rose-cta: #F53DF0;
+    --rose-cta-dark: #D92BD5;
+    --violet: #7C4DEB;
+    --magenta: #C13FE0;
+    --bleu: #5B8CF0;
+    --ink: #17181c;
+    --ink-soft: #4b4f5a;
+    --muted: #8a8f9c;
+    --line: #e8e9ee;
+    --photo-1: var(--turquoise);
+    --photo-2: var(--violet);
+    --orchid: #E056E6;
+  }
+  section { --t1: var(--turquoise); --t2: var(--violet); --on-tone: #fff; }
+  section[data-tone="b"] { --t1: var(--violet); --t2: var(--orchid); }
+  section[data-tone="c"] { --t1: var(--turquoise); --t2: var(--citron); --on-tone: var(--ink); }
+
+  html { font-size: clamp(16px, 0.9vw + 10px, 30px); scroll-behavior: smooth; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); color: var(--ink); background: #fff; line-height: 1.6; -webkit-text-size-adjust: 100%; }
+
+  .watermark { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  .watermark text { font-family: var(--font); font-weight: 500; font-size: 18px; letter-spacing: .3em; text-transform: uppercase; }
+  .watermark .a { fill: #c7b5f7; opacity: .15; }
+  .watermark .b { fill: #f3a9c8; opacity: .13; }
+  .watermark-local text { font-family: var(--font); font-weight: 500; letter-spacing: .3em; text-transform: uppercase; fill: #fff; }
+  .watermark-local .da { opacity: .1; }
+  .watermark-local .db { opacity: .08; }
+
+  .topbar { position: sticky; top: 0; z-index: 20; height: 3.6rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 max(1rem, 2vw); background: rgba(255,255,255,.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+  .topbar i { width: 2rem; height: 2rem; border-radius: .5rem; background: linear-gradient(135deg, var(--turquoise), var(--citron)); }
+  .topbar a.home { display: contents; color: inherit; text-decoration: none; }
+  .topbar b { font-weight: 600; font-size: 1.1rem; letter-spacing: -.01em; }
+  .topbar .act { justify-self: end; }
+  .topbar .btn.sm { padding: .22rem .65rem; font-size: .72rem; border-radius: .4rem; }
+  @media (max-width: 520px) { .topbar { grid-template-columns: auto 1fr auto; gap: .6rem; } .topbar b { font-size: .9rem; text-align: center; } .topbar .btn.sm { padding: .22rem .6rem; font-size: .72rem; } }
+  section { scroll-margin-top: 3.6rem; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: .55rem 1.1rem; border-radius: .6rem; background: var(--rose-cta); color: #fff; font-weight: 600; font-size: .95rem; text-decoration: none; border: 0; cursor: pointer; transition: background .15s, transform .15s; }
+  .btn:hover { background: var(--rose-cta-dark); }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 3px solid var(--rose-cta); outline-offset: 3px; }
+  .btn.sm { padding: .42rem .95rem; font-size: .88rem; }
+  .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; margin-top: 2rem; }
+  a.link { color: var(--rose-cta-dark); font-weight: 500; text-underline-offset: .2em; }
+
+  h1, h2, .lead, blockquote, .card p, .card h3, .source { text-shadow: 0 0 .35rem #fff, 0 0 .7rem #fff; }
+  .kicker { text-shadow: none; }
+  .dark h1, .dark h2, .dark .lead, .dark blockquote, .dark .card p, .dark .card h3, .dark .source { text-shadow: 0 0 .35rem var(--ink), 0 0 .7rem var(--ink); }
+
+  main { position: relative; z-index: 1; }
+  section {
+    min-height: calc(100vh - 3.6rem); min-height: calc(100svh - 3.6rem);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem max(1.25rem, 6vw);
+  }
+  .wrap { width: 100%; max-width: 68rem; margin: 0 auto; }
+
+  .kicker {
+    display: inline-block; margin-bottom: 1.6rem;
+    padding: .38rem 1.1rem; border-radius: 2rem;
+    background: linear-gradient(90deg, var(--t1), var(--t2)); color: var(--on-tone);
+    font-weight: 600; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  }
+  h1, h2 { font-weight: 600; line-height: 1.15; letter-spacing: -.015em; }
+  h1 { font-size: clamp(2.3rem, 6.2vw, 4.8rem); max-width: 18ch; }
+  h2 { font-size: clamp(1.75rem, 4vw, 3rem); max-width: 22ch; }
+  h2::after { content: ""; display: block; width: 3.2rem; height: .32rem; margin-top: 1.1rem; border-radius: .2rem; background: linear-gradient(90deg, var(--t1), var(--t2)); }
+
+  .lead { font-size: clamp(1.05rem, 1.55vw, 1.5rem); font-weight: 400; color: var(--ink-soft); max-width: 40rem; margin-top: 1.6rem; }
+  .source { margin-top: 2.5rem; padding-top: .8rem; border-top: 1px solid var(--line); font-size: .8rem; color: var(--muted); max-width: 40rem; }
+  .source b { font-weight: 500; color: var(--ink-soft); }
+  .source a { color: inherit; text-underline-offset: .2em; }
+
+  .brand { display: flex; align-items: center; gap: .8rem; font-weight: 500; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
+  .hero .meta { margin-top: 2.5rem; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  .split .wrap { display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center; }
+  @media (min-width: 900px) { .split .wrap { grid-template-columns: 1.1fr 1fr; gap: 4rem; } }
+  .visual {
+    aspect-ratio: 4 / 3; width: 100%; border-radius: .8rem;
+    border: 1px solid var(--line); background: rgba(255,255,255,.7);
+    display: grid; place-items: center; text-align: center; padding: 1.5rem;
+    color: var(--muted); font-size: .95rem;
+  }
+  .visual img { width: 100%; height: 100%; object-fit: cover; border-radius: .6rem; }
+
+  .quote blockquote { font-weight: 500; font-size: clamp(1.5rem, 3.5vw, 2.7rem); line-height: 1.28; max-width: 30ch; padding-left: 1.5rem; border-left: .3rem solid var(--t2); border-image: linear-gradient(var(--t1), var(--t2)) 1; }
+  .quote cite { display: block; margin-top: 1.6rem; font-style: normal; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .inline-quote { margin-top: 1.6rem; max-width: 40rem; padding-left: 1rem; border-left: .22rem solid var(--t2); border-image: linear-gradient(var(--t1), var(--t2)) 1; font-weight: 500; font-size: clamp(1rem, 1.35vw, 1.3rem); color: var(--ink); text-shadow: 0 0 .35rem #fff, 0 0 .7rem #fff; }
+
+  .cols .grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2.5rem; }
+  @media (min-width: 800px) { .cols .grid { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; } }
+  .card { padding-top: 1rem; border-top: 2px solid var(--line); }
+  .card .num { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: .5rem; background: linear-gradient(135deg, var(--t1), var(--t2)); color: var(--on-tone); font-weight: 700; font-size: .95rem; }
+  .card h3 { font-weight: 600; font-size: 1.2rem; line-height: 1.25; margin: .9rem 0 .5rem; }
+  .card p { font-size: .95rem; font-weight: 400; color: var(--ink-soft); }
+
+  .speakers .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2.5rem 1.5rem; margin-top: 2.5rem; }
+  @media (min-width: 800px) { .speakers .grid { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 2.5rem; } }
+  .speakers .grid.solo { grid-template-columns: 1fr; justify-items: start; }
+  .speakers .grid.solo .speaker { display: grid; grid-template-columns: auto 1fr; gap: 0 2rem; align-items: center; text-align: left; }
+  .speakers .grid.solo .photo { grid-row: span 3; margin: 0; }
+  .speakers .grid.solo .bio { margin-left: 0; max-width: 26rem; }
+  @media (max-width: 520px) { .speakers .grid.solo .speaker { grid-template-columns: 1fr; text-align: center; justify-items: center; } .speakers .grid.solo .photo { margin: 0 auto 1.2rem; } .speakers .grid.solo .bio { margin: .6rem auto 0; } }
+  .speaker { text-align: center; }
+  .photo { position: relative; isolation: isolate; width: clamp(6.5rem, 16vw, 11rem); aspect-ratio: 1; margin: 0 auto 1.2rem; border-radius: 50%; overflow: hidden; background: #fff; }
+  .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.02) brightness(1.35); }
+  .photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, var(--photo-1), var(--photo-2)); mix-blend-mode: multiply; opacity: .8; }
+  .photo.empty { background: linear-gradient(135deg, var(--photo-1), var(--photo-2)); }
+  .photo.empty::after { display: none; }
+  .photo.empty svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .speaker h3 { font-weight: 600; font-size: 1.15rem; line-height: 1.25; }
+  .speaker .role { margin-top: .35rem; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .speaker .bio { margin-top: .6rem; font-size: .92rem; color: var(--ink-soft); max-width: 16rem; margin-left: auto; margin-right: auto; }
+
+  .closing .lead { color: var(--ink); }
+  .foot { display: flex; align-items: center; gap: .9rem; margin-top: 2.5rem; font-size: .9rem; color: var(--muted); flex-wrap: wrap; }
+  .foot i { width: 1.9rem; height: 1.9rem; border-radius: .5rem; flex: none; }
+  .foot i:nth-child(1) { background: linear-gradient(135deg, var(--bleu), var(--violet)); }
+  .foot i:nth-child(2) { background: linear-gradient(135deg, var(--turquoise), var(--citron)); }
+  .foot i:nth-child(3) { background: linear-gradient(135deg, var(--violet), var(--magenta)); }
+  .foot span { margin-left: .4rem; }
+
+  section.dark { position: relative; isolation: isolate; background: var(--ink); color: #f3f4f7; }
+  .watermark-local { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: -1; pointer-events: none; }
+  .dark .lead { color: #c7cad2; }
+  .dark .source { color: #9aa0ab; border-top-color: #33363e; }
+  .dark .source b { color: #d7d9de; }
+  .dark .card { border-top-color: #33363e; }
+  .dark .card h3 { color: #f3f4f7; }
+  .dark .card p { color: #b7bac2; }
+  .dark blockquote { color: #f3f4f7; }
+  .dark cite { color: #9aa0ab; }
+  .dark nav.dots a { background: #fff; }
+
+  .fivecols .grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2.5rem; }
+  @media (min-width: 700px) { .fivecols .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1100px) { .fivecols .grid { grid-template-columns: repeat(5, 1fr); gap: 1.75rem; } }
+
+  /* Sections denses (titre + lead + cartes) : marges resserrées pour tenir sur un écran */
+  section.dense { padding-top: 3rem; padding-bottom: 3rem; }
+  .dense .kicker { margin-bottom: 1.1rem; }
+  .dense h2::after { margin-top: .8rem; }
+  .dense .lead { margin-top: 1.1rem; }
+  .dense .grid { margin-top: 1.6rem; }
+  .dense .source { margin-top: 1.6rem; }
+
+  .takeaway { margin-top: 3.2rem; max-width: 46rem; font-weight: 400; font-size: clamp(1.25rem, 2vw, 1.85rem); line-height: 1.35; letter-spacing: -.01em; color: var(--ink); text-shadow: 0 0 .35rem #fff, 0 0 .7rem #fff; }
+  .dense .takeaway { margin-top: 3rem; }
+  .takeaway.sm { margin-top: 1.6rem; font-size: clamp(1.05rem, 1.55vw, 1.5rem); line-height: 1.5; letter-spacing: 0; max-width: 40rem; }
+  .dense .card { border-top: 0; padding-top: 0; }
+
+  /* Quatre points : même carte que .cols, 2 colonnes puis 4 */
+  @media (min-width: 700px) { .cols.fourcols .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1100px) { .cols.fourcols .grid { grid-template-columns: repeat(4, 1fr); gap: 2rem; } }
+  section.fourcols { padding-top: 3rem; padding-bottom: 3rem; }
+  .speakers .grid.solo .speaker { align-content: center; }
+  .dark .inline-quote { color: #f3f4f7; text-shadow: 0 0 .35rem var(--ink), 0 0 .7rem var(--ink); }
+  section.dark.dense .card { border-top: 0; padding-top: 0; }
+
+  /* Schéma en image : colonne visuelle plus large, image entière, clic pour agrandir */
+  @media (min-width: 900px) { .split.figure .wrap { grid-template-columns: 1fr 1.6fr; gap: 3rem; } }
+  .visual.fit { aspect-ratio: auto; padding: .5rem; background: #fff; }
+  .visual.fit img { height: auto; object-fit: contain; cursor: zoom-in; }
+  .visual.fit.wide { margin-top: 1.6rem; }
+  .widefig h2 { max-width: 34ch; }
+  .widefig .lead { max-width: 52rem; }
+  .visual.fit.portrait img { width: auto; max-width: 100%; max-height: min(34rem, calc(100svh - 12rem)); }
+  /* Visionneuse de schémas : l'image s'ouvre entière, puis on zoome et on se déplace dedans */
+  .lightbox { position: fixed; inset: 0; z-index: 50; display: none; overflow: hidden; background: rgba(23,24,28,.96); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .lightbox.on { display: block; }
+  .lightbox.drag { cursor: grabbing; }
+  .lightbox img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; border-radius: 6px; background: #fff; -webkit-user-drag: none; }
+  .lb-bar { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; z-index: 2; }
+  .lb-bar button { font: 600 16px/1 var(--font); min-width: 40px; height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.28); background: rgba(23,24,28,.85); color: #fff; cursor: pointer; }
+  .lb-bar button:hover { background: rgba(255,255,255,.2); }
+  .lb-bar button:focus-visible { outline: 2px solid var(--turquoise); outline-offset: 2px; }
+  .lb-hint { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 2; max-width: calc(100% - 24px); padding: 5px 12px; border-radius: 16px; background: rgba(23,24,28,.8); color: #c7cad2; font-size: 12px; text-align: center; pointer-events: none; }
+
+  /* Encadré d'exemple : plus petit que le texte courant, pour illustrer sans dominer */
+  .example { margin-top: 1.8rem; max-width: 34rem; padding: .9rem 1.1rem; border: 1px solid var(--line); border-left: .25rem solid var(--t2); border-radius: .6rem; background: rgba(255,255,255,.75); }
+  .example .tag { display: block; margin-bottom: .35rem; font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .example p { font-size: .88rem; line-height: 1.5; color: var(--ink-soft); }
+
+  /* Dissuasion de copie : pas de sélection, pas de glisser d'image, et le nom posé sur chaque schéma (dans la slide et en plein écran) */
+  body { -webkit-user-select: none; user-select: none; }
+  img { -webkit-user-drag: none; -webkit-touch-callout: none; }
+  .visual.fit { position: relative; overflow: hidden; }
+  .visual.fit::after, .lightbox::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22100%25%22%20height=%22100%25%22%3E%3Cdefs%3E%3Cpattern%20id=%22p%22%20width=%22700%22%20height=%22124%22%20patternUnits=%22userSpaceOnUse%22%20patternTransform=%22rotate(12)%22%3E%3Cg%20font-family=%22-apple-system,Segoe%20UI,Roboto,Helvetica,Arial,sans-serif%22%20font-weight=%22500%22%20font-size=%2214%22%20letter-spacing=%223.1%22%3E%3Ctext%20x=%220%22%20y=%2237%22%20fill=%22%237C4DEB%22%20fill-opacity=%22.09%22%3ECLEAN%20DATA%20ARCHITECTURE%3C/text%3E%3Ctext%20x=%22350%22%20y=%2299%22%20fill=%22%23E056E6%22%20fill-opacity=%22.08%22%3ECLEAN%20DATA%20ARCHITECTURE%3C/text%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22url(%23p)%22/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%; }
+  /* Grand marquage affiché quand une capture ou une impression est détectée */
+  .tm { position: fixed; inset: 0; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; padding: 2rem; text-align: center; pointer-events: none; background: rgba(23,24,28,.9); color: #fff; }
+  .tm.on { display: flex; }
+  .tm b { font-size: clamp(2rem, 7vw, 5.5rem); font-weight: 700; line-height: 1.05; letter-spacing: -.02em; }
+  .tm span { font-size: clamp(.9rem, 1.6vw, 1.4rem); color: #c7cad2; }
+  @media print { .tm { display: flex !important; position: fixed; background: rgba(255,255,255,.82); color: var(--ink); } .tm span { color: var(--ink-soft); } }
+
+  nav.dots { position: fixed; right: 1rem; top: 50%; transform: translateY(-50%); display: none; flex-direction: column; gap: .7rem; z-index: 10; }
+  @media (min-width: 900px) { nav.dots { display: flex; } }
+  nav.dots a { width: .6rem; height: .6rem; border-radius: 50%; background: var(--violet); opacity: .2; transition: opacity .2s, transform .2s; }
+  nav.dots a.on { opacity: .9; transform: scale(1.4); }
+
+  @media (max-height: 520px) { section { padding: 3rem max(1.25rem, 6vw); } }
+  @media print { section { min-height: auto; page-break-inside: avoid; } nav.dots { display: none; } .watermark { position: absolute; } }
+  /* Atelier cartes : familles de cartes par couleur, comme le jeu physique */
+  .fams { margin-top: 1.4rem; display: grid; gap: .9rem; }
+  .fam { display: grid; grid-template-columns: 1fr; gap: .1rem; align-items: start; min-width: 0; }
+  @media (min-width: 800px) { .fam { grid-template-columns: 8.5rem 1fr; gap: 1rem; } .fam .chips { margin-top: 0; } }
+  .fam .lbl { display: flex; align-items: center; gap: .5rem; padding-top: .15rem; }
+  .fam h3 { font-weight: 600; font-size: .9rem; color: var(--ink); }
+  .dark .fam h3 { color: #f3f4f7; }
+  .fam .sw { flex: none; width: 1rem; height: 1.3rem; border-radius: .25rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .45rem; }
+  .chips span { padding: .18rem .45rem; border-radius: .4rem; font-size: .7rem; line-height: 1.3; color: var(--ink); }
+  .c-rose span { background: #F8D5F5; } .c-teal span { background: #DFF5F3; } .c-violet span { background: #E7DAF4; }
+  .c-vert span { background: #C8F2D8; } .c-jaune span { background: #FDF7CF; } .c-orange span { background: #FBEADF; }
+  .dark .example { background: rgba(255,255,255,.06); border-color: #33363e; border-left-color: var(--t2); }
+  .dark .example p { color: #c7cad2; } .dark .example .tag { color: #9aa0ab; }
+  .cols .grid + .example { margin-top: 2rem; }
+
+  /* Deux cartes : grille à deux colonnes, sans case vide */
+  @media (min-width: 800px) { .cols.twocols .grid { grid-template-columns: repeat(2, 1fr); max-width: 46rem; } }
+  /* Six dimensions : une ligne sur grand écran */
+  @media (min-width: 700px) { .cols.sixcols .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1200px) { .cols.sixcols .grid { grid-template-columns: repeat(6, 1fr); gap: 1.6rem; } }
+  section.dense .example { margin-top: 1.2rem; }
+  .atelier h2 { max-width: 30ch; }
+  .sixcols .card p { font-size: .85rem; }
+  .fams.solo .fam { grid-template-columns: 1fr; }
+  .sixcols .card h3, .fivecols .card h3 { margin-top: 0; padding-top: .7rem; border-top: .2rem solid; border-image: linear-gradient(90deg, var(--t1), var(--t2)) 1; }
+  /* Livrables : une ligne par livrable, trois colonnes lisibles comme un tableau */
+  .rows { display: grid; gap: 0; margin-top: 1.6rem; }
+  .row { display: grid; grid-template-columns: 1fr; gap: .2rem; padding: .75rem 0; border-top: 1px solid var(--line); min-width: 0; }
+  .row h3 { font-weight: 600; font-size: 1rem; }
+  .row p { font-size: .88rem; color: var(--ink-soft); line-height: 1.45; }
+  .row.head { display: none; }
+  @media (min-width: 800px) {
+    .row { grid-template-columns: 12rem 1fr 1.3fr 1.2fr; gap: 1.5rem; align-items: baseline; }
+    .row.head { display: grid; padding: 0 0 .5rem; border-top: 0; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  }
+  @media (max-width: 799px) { .row p::before { display: block; font-size: .66rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .row p:nth-of-type(1)::before { content: "Pour qui"; } .row p:nth-of-type(2)::before { content: "Contient"; } .row p:nth-of-type(3)::before { content: "Fini quand"; } }
+  .cols:not(.sixcols):not(.fivecols) .card h3:first-child { margin-top: 0; }
+  .wideh h2 { max-width: 32ch; }
+  /* Fiche indicateur : le livrable, présenté comme un formulaire à remplir */
+  .fiche { border: 1px solid var(--line); border-radius: .8rem; background: #fff; padding: 1.2rem 1.4rem; box-shadow: 0 .6rem 1.6rem rgba(124,77,235,.08); min-width: 0; }
+  .fiche-t { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-bottom: .7rem; border-bottom: .2rem solid; border-image: linear-gradient(90deg, var(--t1), var(--t2)) 1; }
+  .fiche dl { display: grid; grid-template-columns: 7rem 1fr; }
+  .fiche dt, .fiche dd { padding: .55rem 0; border-bottom: 1px dashed var(--line); font-size: .9rem; }
+  .fiche dt { font-weight: 600; color: var(--ink); }
+  .fiche dd { color: var(--ink-soft); }
+  .fiche dl > :nth-last-child(-n+2) { border-bottom: 0; }
+  .widefig .visual.fit img { display: block; width: auto; max-width: 100%; max-height: min(34rem, calc(100svh - 17rem)); margin: 0 auto; }
+  /* Glossaire : terme à gauche, définition d'une ligne à droite, deux colonnes sur grand écran */
+  .gloss { display: grid; grid-template-columns: 1fr; gap: 0 3rem; margin-top: 1.6rem; }
+  @media (min-width: 900px) { .gloss { grid-template-columns: 1fr 1fr; } }
+  .gloss > div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: .5rem 0; border-top: 1px solid var(--line); min-width: 0; }
+  .gloss dt { font-weight: 600; font-size: .9rem; }
+  .gloss dd { font-size: .88rem; color: var(--ink-soft); line-height: 1.45; }
+  .dark .takeaway { color: #f3f4f7; text-shadow: 0 0 .35rem var(--ink), 0 0 .7rem var(--ink); }
+  @media (min-width: 1100px) { .gloss { grid-template-columns: repeat(3, 1fr); gap: 0 2.2rem; } .gloss > div { grid-template-columns: 1fr; gap: .15rem; } }
+  .widefig.corr .visual.fit img { max-height: min(40rem, calc(100svh - 14rem)); }
+  .gloss > div { align-content: start; }
+  /* Repère de progression : la partie en cours est soulignée */
+  .fil { display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; margin-bottom: 1.1rem; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .fil span { padding-bottom: .2rem; border-bottom: .15rem solid transparent; }
+  .fil span.on { color: var(--ink); border-bottom-color: var(--t2); }
+  .dark .fil span.on { color: #f3f4f7; }
+  /* Fiche qui se remplit : vide en gris italique, nouveau en surligné */
+  .fiche dt small { display: block; margin-top: .1rem; font-size: .6rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .fiche dd.todo { color: var(--muted); font-style: italic; }
+  .fiche .new { background: linear-gradient(90deg, rgba(130,246,235,.22), rgba(124,77,235,.10)); }
+  .fiche dt.new { padding-left: .5rem; border-radius: .4rem 0 0 .4rem; }
+  .fiche dd.new { padding-right: .5rem; border-radius: 0 .4rem .4rem 0; }
+  .fiche dl { grid-template-columns: 7.5rem 1fr; }
+  .dark .fiche { color: var(--ink); }
+  .dark .fiche dt { color: var(--ink); }
+  .livrable .takeaway.sm { margin-top: 1.4rem; }
+  /* Catalogue : maquette d'une recherche et d'un résultat */
+  .catalog { border: 1px solid var(--line); border-radius: .9rem; background: #fff; padding: 1rem 1.2rem 1.2rem; box-shadow: 0 .6rem 1.6rem rgba(124,77,235,.08); min-width: 0; }
+  .cat-search { display: flex; align-items: center; gap: .6rem; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: .6rem; background: #fafafc; font-size: .95rem; color: var(--ink); }
+  .cat-search svg { width: 1.05rem; height: 1.05rem; color: var(--muted); flex: none; }
+  .cat-count { margin: .6rem 0 .8rem; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .cat-item { border: 1px solid var(--line); border-left: .25rem solid var(--violet); border-radius: .7rem; padding: .9rem 1rem; }
+  .cat-top { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .cat-type, .cat-badge { font-size: .66rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: .15rem .5rem; border-radius: .35rem; }
+  .cat-type { background: #F1EAFD; color: var(--violet); }
+  .cat-badge { background: #E3FBE9; color: #1f7a3d; }
+  .cat-item h3 { margin: .5rem 0 .2rem; font-size: 1.1rem; font-weight: 600; }
+  .cat-desc { font-size: .85rem; color: var(--ink-soft); line-height: 1.45; }
+  .cat-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1rem; margin-top: .8rem; padding-top: .7rem; border-top: 1px dashed var(--line); }
+  .cat-meta dt { font-size: .62rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .cat-meta dd { font-size: .82rem; color: var(--ink); }
+  .cat-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .8rem; }
+  .cat-tags span { font-size: .72rem; padding: .12rem .5rem; border-radius: 1rem; background: #F4F4F7; color: var(--ink-soft); }
+  @media (max-width: 520px) { .cat-meta { grid-template-columns: 1fr; } }
+  /* Réglage d'échelle pour la projection : chaque section tient sur un écran */
+  html { font-size: clamp(14px, .62vw + 8.5px, 24px); }
+  section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+  section.dense, section.fourcols { padding-top: 2.4rem; padding-bottom: 2.4rem; }
+  h1 { font-size: clamp(2.2rem, 5vw, 4.2rem); }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); max-width: 26ch; }
+  .wideh h2, .widefig h2 { max-width: 34ch; }
+  .lead { font-size: clamp(1rem, 1.3vw, 1.3rem); margin-top: 1.2rem; }
+  .kicker { margin-bottom: 1.1rem; }
+  h2::after { margin-top: .9rem; }
+  .cols .grid, .speakers .grid { margin-top: 1.8rem; }
+  .source { margin-top: 1.6rem; }
+  .example { margin-top: 1.2rem; max-width: 40rem; }
+  .takeaway { margin-top: 1.8rem; font-size: clamp(1.15rem, 1.7vw, 1.6rem); }
+  .widefig .visual.fit img { max-height: calc(100svh - 21rem); }
+  .widefig.corr .visual.fit img { max-height: calc(100svh - 17rem); }
+  .split .wrap { gap: 3rem; }
+  .widefig .visual.fit img { max-height: calc(100svh - 27rem); min-height: 12rem; }
+  .widefig.corr .visual.fit img { max-height: calc(100svh - 24rem); }
+  /* Programme : pas de filet dégradé au-dessus des titres, seulement la pastille */
+  .fivecols .card h3 { border-top: 0; padding-top: 0; margin-top: .9rem; border-image: none; }
+  /* Schémas pleine largeur : la figure prend la place restante de l'écran, jamais plus */
+  @media (min-width: 700px) {
+    section.widefig { height: calc(100svh - 3.6rem); min-height: 0; }
+    .widefig .wrap { display: flex; flex-direction: column; height: 100%; justify-content: center; }
+    .widefig .visual.fit { flex: 0 1 auto; min-height: 0; display: flex; justify-content: center; }
+    .widefig .visual.fit img { max-height: 100%; min-height: 0; height: auto; width: auto; max-width: 100%; object-fit: contain; }
+  }
+  @media (max-height: 760px) and (min-width: 700px) { html { font-size: 15px; } section, section.dense, section.fourcols { padding-top: 1.8rem; padding-bottom: 1.8rem; } }
+  @media (min-width: 700px) { .widefig .wrap { align-items: flex-start; } .widefig .visual.fit, .widefig .source { align-self: stretch; } }
+  /* Titres en haut, texte sur toute la largeur */
+  main section:not(.hero) { justify-content: flex-start; padding-top: 2.6rem; }
+  main section.dense:not(.hero), main section.fourcols { padding-top: 2.2rem; }
+  .wrap { max-width: 88rem; }
+  h2, .wideh h2, .widefig h2, .speakers h2 { max-width: none; }
+  .lead, .source, .example, .takeaway, .takeaway.sm, .inline-quote, .widefig .lead, .closing .lead { max-width: none; }
+  .split .wrap { align-items: start; }
+  @media (min-width: 900px) { .split .wrap { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 700px) {
+    .widefig .wrap { justify-content: flex-start; }
+    .widefig .visual.fit { flex: 1 1 0; }
+    .widefig .visual.fit img { height: 100%; }
+  }
+  .fams.solo .chips { max-width: none; }
+  /* Titre en haut, contenu centré verticalement dans l'espace restant */
+  main section:not(.hero) > .wrap { flex: 1 1 auto; display: flex; flex-direction: column; }
+  main section:not(.hero):not(.split) > .wrap > * { align-self: stretch; }
+  main section:not(.hero) > .wrap > .kicker, main section:not(.hero) > .wrap > .fil { align-self: flex-start; }
+  main section:not(.hero):not(.split) > .wrap > h2 + :not(.lead),
+  main section:not(.hero):not(.split) > .wrap > h2 + .lead + * { margin-top: auto; }
+  main section:not(.hero):not(.split) > .wrap > :last-child { margin-bottom: auto; }
+  /* Écrans à deux colonnes : titre en haut à gauche, le reste centré */
+  main section.split > .wrap { display: grid; align-items: stretch; }
+  main section.split > .wrap > div:first-child { display: flex; flex-direction: column; align-items: flex-start; }
+  main section.split > .wrap > div:first-child > * { align-self: stretch; }
+  main section.split > .wrap > div:first-child > .kicker, main section.split > .wrap > div:first-child > .fil { align-self: flex-start; }
+  main section.split > .wrap > div:first-child > h2 + * { margin-top: auto; }
+  main section.split > .wrap > div:first-child > :last-child { margin-bottom: auto; }
+  main section.split > .wrap > :not(:first-child) { align-self: center; }
+  @media (max-width: 899px) { main section.split > .wrap > div:first-child > h2 + * { margin-top: 1.2rem; } main section.split > .wrap > div:first-child > :last-child { margin-bottom: 0; } }
+  /* Mise en page des écrans : le bloc titre + contenu descend quand il y a de la place (centrage optique, légèrement au-dessus du milieu) */
+  main section:not(.hero) > .wrap::before, main section:not(.hero) > .wrap::after { content: ""; display: block; flex: 2 1 0; min-height: 0; }
+  main section:not(.hero) > .wrap::after { flex-grow: 3; }
+  main section:not(.hero):not(.split) > .wrap > h2 + :not(.lead),
+  main section:not(.hero):not(.split) > .wrap > h2 + .lead + * { margin-top: clamp(1.4rem, 5vh, 3.2rem); }
+  main section:not(.hero):not(.split) > .wrap > :last-child { margin-bottom: 0; }
+  main section:not(.hero):not(.split) > .wrap > .lead + .grid,
+  main section:not(.hero):not(.split) > .wrap > .lead + .fams { margin-top: clamp(1.4rem, 5vh, 3.2rem); }
+  /* Schémas : le titre reste en haut, la figure prend toute la place */
+  main section.widefig > .wrap::before, main section.widefig > .wrap::after { flex: 0 0 0; }
+  /* Deux colonnes : les deux blocs centrés, le titre descend avec son texte */
+  main section.split > .wrap { display: grid; align-items: center; }
+  main section.split > .wrap::before, main section.split > .wrap::after { display: none; }
+  main section.split > .wrap > div:first-child { display: block; }
+  main section.split > .wrap > div:first-child > h2 + * { margin-top: 1.4rem; }
+  main section.split > .wrap > div:first-child > :last-child { margin-bottom: 0; }
+  @media (min-width: 900px) { main section.split { justify-content: center; } }
+  /* Respiration homogène entre les blocs */
+  .example + .example { margin-top: .8rem; }
+  .grid + .example, .grid + .takeaway, .fams + .source, .rows + .source { margin-top: 1.6rem; }
+  /* Réponses fournisseurs : la citation, puis ce qui coince */
+  .card p.said { font-size: 1rem; color: var(--ink); font-style: italic; }
+  .card p.gap { margin-top: .6rem; display: inline-block; padding: .2rem .55rem; border-radius: .4rem; background: #FCEAFC; color: #9B2C9A; font-size: .82rem; font-weight: 600; }
+  /* Pour aller plus loin : encadré newsletter puis quatre colonnes de lectures */
+  .cda-box { display: grid; grid-template-columns: 1fr; gap: .2rem; padding: 1rem 1.2rem; border-radius: .8rem; background: linear-gradient(135deg, rgba(130,246,235,.22), rgba(238,250,92,.22)); border: 1px solid var(--line); }
+  @media (min-width: 900px) { .cda-box { grid-template-columns: auto 1fr auto; align-items: center; gap: 1.4rem; } }
+  .cda-t { font-weight: 700; font-size: 1.05rem; }
+  .cda-d { font-size: .9rem; color: var(--ink-soft); }
+  .bk-grid { display: grid; grid-template-columns: 1fr; gap: 1.6rem 2rem; margin-top: 2.2rem; }
+  @media (min-width: 700px) { .bk-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1100px) { .bk-grid { grid-template-columns: repeat(4, 1fr); } }
+  .bk-col { min-width: 0; }
+  .bk-col h3 { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-bottom: .5rem; border-bottom: .2rem solid; border-image: linear-gradient(90deg, var(--t1), var(--t2)) 1; }
+  .bk-col ul { list-style: none; display: grid; gap: 1rem; margin-top: .8rem; }
+  .bk-t { font-weight: 600; font-size: .95rem; line-height: 1.3; }
+  .bk-t a { color: inherit; text-underline-offset: .2em; }
+  .bk-a { font-size: .75rem; color: var(--muted); margin-top: .15rem; }
+  .bk-w { font-size: .82rem; color: var(--ink-soft); margin-top: .3rem; line-height: 1.4; }
+  /* Exercice : cartes en cadre pointillé, réponse à compléter */
+  .exo .card { padding: .9rem 1rem; border: 1.5px dashed var(--line); border-radius: .7rem; background: rgba(255,255,255,.75); }
+  .exo .card h3 { border-top: 0; padding-top: 0; margin-top: 0; border-image: none; color: var(--violet); }
+  .exo .card p { font-size: .9rem; }
+  .exo .card .blank { display: block; height: 4.2rem; margin-top: .3rem; background: repeating-linear-gradient(to bottom, transparent 0 1.35rem, var(--line) 1.35rem calc(1.35rem + 1px)); }
+  /* Contrôles par étape : trois blocs reliés par des flèches */
+  .stage-row { display: grid; grid-template-columns: 1fr; gap: .8rem; }
+  @media (min-width: 900px) { .stage-row { grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 1rem; } }
+  .stage { position: relative; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: .8rem; background: rgba(255,255,255,.85); min-width: 0; }
+  .stage h3 { margin-top: .5rem; font-size: 1.1rem; font-weight: 600; }
+  .stage .st-where { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+  .stage p { font-size: .92rem; color: var(--ink-soft); }
+  .stage .st-crit { margin-top: .6rem; display: inline-block; padding: .15rem .5rem; border-radius: .35rem; background: #F1EAFD; color: var(--violet); font-size: .75rem; font-weight: 600; }
+  .stage-arrow { display: none; align-self: center; font-size: 1.6rem; color: var(--muted); }
+  @media (min-width: 900px) { .stage-arrow { display: block; } }
+  .gk-n { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: .45rem; background: linear-gradient(135deg, var(--t1), var(--t2)); color: var(--on-tone); font-weight: 700; font-size: .9rem; flex: none; }
+  .gk-howto { margin-top: 1.4rem; padding: .9rem 1.1rem; border-radius: .7rem; background: var(--ink); color: #f3f4f7; }
+  .gk-howto-t { font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9aa0ab; margin-bottom: .3rem; }
+  .gk-howto p { font-size: .98rem; }
+  .gk-howto b { color: var(--turquoise); font-weight: 600; }
+  .gk-howto span { color: #6b7080; margin: 0 .3rem; }
+  /* Règles métier façon Gherkin */
+  .gk-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
+  @media (min-width: 900px) { .gk-grid { grid-template-columns: repeat(3, 1fr); } }
+  .gk { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: .8rem; background: #fff; overflow: hidden; min-width: 0; box-shadow: 0 .4rem 1.2rem rgba(124,77,235,.06); }
+  .gk-head { display: flex; gap: .7rem; align-items: center; padding: .8rem 1rem; border-bottom: 1px solid var(--line); background: #FAF8FF; }
+  .gk-stage { font-weight: 600; font-size: 1rem; }
+  .gk-where { font-size: .74rem; color: var(--muted); }
+  .gk-body { flex: 1; padding: .9rem 1rem; display: grid; gap: .55rem; align-content: start; }
+  .gk-body p { font-size: .93rem; line-height: 1.45; color: var(--ink); }
+  .gk-body b { color: var(--violet); font-weight: 700; margin-right: .2rem; }
+  .gk-blank { display: block; height: 2.6rem; margin-top: .1rem; background: repeating-linear-gradient(to bottom, transparent 0 1.25rem, var(--line) 1.25rem calc(1.25rem + 1px)); }
+  .gk-crit { padding: .5rem 1rem; border-top: 1px dashed var(--line); font-size: .74rem; font-weight: 600; letter-spacing: .04em; color: var(--violet); }
+  .gk-howto.big { padding: 1.4rem 1.6rem; }
+  .gk-howto.big dl { display: grid; gap: .1rem; margin-top: .4rem; }
+  .gk-howto.big dl > div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: .7rem 0; border-top: 1px solid #33363e; }
+  .gk-howto.big dl > div:first-child { border-top: 0; }
+  .gk-howto.big dt { color: var(--turquoise); font-weight: 700; font-size: 1.15rem; }
+  .gk-howto.big dd { font-size: 1.15rem; color: #f3f4f7; }
+</style>
+</head>
+<body>
+
+<svg class="watermark" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="wm" width="1100" height="340" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
+      <text class="a" x="0" y="90">Clean Data Architecture</text>
+      <text class="b" x="550" y="250">Clean Data Architecture</text>
+    </pattern>
+    <pattern id="wm-dark" width="1100" height="340" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
+      <text class="da" x="0" y="90">Clean Data Architecture</text>
+      <text class="db" x="550" y="250">Clean Data Architecture</text>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#wm)"/>
+</svg>
+
+<header class="topbar"><a class="home" href="https://cleandataarchitecture.substack.com/" target="_blank" rel="noopener"><i></i><b>Clean Data Architecture</b></a><span class="act"><a class="btn sm" href="https://cleandataarchitecture.substack.com/" target="_blank" rel="noopener">Subscribe</a></span></header>
+
+<nav class="dots" aria-label="Sections"></nav>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="brand">IFP School · Mastère Spécialisé</div>
+    <h1>De la donnée à l'indicateur : gérer la transversalité</h1>
+    <p class="lead">Une introduction à la donnée en entreprise : d'où elle vient, qui s'en occupe et comment en faire un indicateur fiable.</p>
+    <p class="meta">Gaëlle Seret · 2026</p>
+  </div>
+</section>
+
+<section class="speakers" data-tone="a">
+  <div class="wrap">
+    <div class="kicker">Qui suis-je ?</div>
+    <h2>Votre intervenante</h2>
+    <div class="grid solo"><div class="speaker">
+      <div class="photo"><img src="data:image/jpeg;base64,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" alt="Gaëlle Seret"></div>
+      <h3>Gaëlle Seret</h3><p class="role">Data · Freelance</p>
+      <p class="bio">Ancienne étudiante de l'IFP School. Plus de dix ans dans la data, dans l'énergie, la finance, l'industrie, le luxe et le retail.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="cols dense" data-tone="b">
+  <div class="wrap">
+    <div class="kicker">Tour de table</div>
+    <h2>Votre expérience des données</h2>
+    <div class="grid"><div class="card"><div class="num">1</div><h3>Vous</h3><p>Prénom et parcours.</p></div><div class="card"><div class="num">2</div><h3>L'entreprise</h3><p>Déjà travaillé en entreprise ? Dans quel service ?</p></div><div class="card"><div class="num">3</div><h3>Les données</h3><p>Avec quelles données ?</p></div><div class="card"><div class="num">4</div><h3>Les problèmes</h3><p>Quels problèmes avez-vous déjà rencontrés ?</p></div><div class="card"><div class="num">5</div><h3>Les personnes</h3><p>À qui avez-vous demandé de l'aide ?</p></div><div class="card"><div class="num">6</div><h3>Les métiers</h3><p>Connaissez-vous les métiers de la data qui auraient pu vous aider ?</p></div></div>
+  </div>
+</section>
+
+<section class="cols" data-tone="c">
+  <div class="wrap">
+    <div class="kicker">Le fil du cours</div>
+    <h2>Trois problèmes, trois questions</h2>
+    <p class="lead">Les problèmes que nous rencontrons en entreprise tiennent souvent en trois mots. C'est ce que nous allons voir ensemble.</p>
+    <div class="grid"><div class="card"><div class="num">1</div><h3>Incompréhensible</h3><p>Que veut dire la donnée pour chaque service ?</p></div><div class="card"><div class="num">2</div><h3>Introuvable</h3><p>Où est la donnée et qui en est responsable ?</p></div><div class="card"><div class="num">3</div><h3>Fausse</h3><p>Comment savoir si je peux me fier à la donnée ?</p></div></div>
+  </div>
+</section>
+
+<section class="split livrable" data-tone="a">
+  <div class="wrap">
+    <div>
+      <div class="kicker">Le fil rouge</div>
+      <h2>Comment savoir si un indicateur est utilisable ?</h2>
+    </div>
+    <div class="fiche" role="group" aria-label="Fiche indicateur"><p class="fiche-t">Fiche indicateur</p><dl><dt>Nom<small>Comprendre</small></dt><dd class="todo">Le nom que tout le monde utilise.</dd><dt>Définition<small>Comprendre</small></dt><dd class="todo">Ce qu'il mesure.</dd><dt>Pour qui<small>Comprendre</small></dt><dd class="todo">Qui l'utilise, pour quelle décision.</dd><dt>Lignage<small>Trouver</small></dt><dd class="todo">D'où vient la donnée, étape par étape.</dd><dt>Producteur<small>Trouver</small></dt><dd class="todo">L'équipe qui produit l'indicateur.</dd><dt>Contrôles<small>Vérifier</small></dt><dd class="todo">Les règles vérifiées à chaque étape.</dd><dt>Mise à jour<small>Vérifier</small></dt><dd class="todo">À quelle fréquence le chiffre change.</dd></dl></div>
+  </div>
+</section>
+
+<section class="cols fourcols dense" data-tone="b">
+  <div class="wrap">
+    <div class="kicker">Programme</div>
+    <h2>Quatre parties</h2>
+    <div class="grid"><div class="card"><div class="num">0</div><h3>L'entreprise</h3><p>Qui produit les données, qui les utilise.</p></div><div class="card"><div class="num">1</div><h3>Comprendre</h3><p>Ce que veut dire la donnée.</p></div><div class="card"><div class="num">2</div><h3>Trouver</h3><p>Où est la donnée, qui la produit.</p></div><div class="card"><div class="num">3</div><h3>Vérifier</h3><p>Si on peut s'y fier.</p></div></div>
+  </div>
+</section>
+
+<section class="dense widefig" data-tone="c">
+  <div class="wrap">
+<p class="fil"><span class="on">0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">0 — L'entreprise</div>
+    <h2>Tous les services produisent des données</h2>
+    <p class="lead">Chaque service enregistre des données dans ses applications. Les équipes data les rassemblent et les transforment en indicateurs.</p>
+    <div class="visual fit wide"><img class="zoomable" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDE2MDAgODAwIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkxlcyBzZXJ2aWNlcyBkZSBs4oCZZW50cmVwcmlzZSBwcm9kdWlzZW50IGRlcyBkb25uw6llcyB2aWEgbGV1cnMgYXBwbGljYXRpb25zIDsgbGVzIMOpcXVpcGVzIGRhdGEgbGVzIGNvbGxlY3RlbnQsIGxlcyBkw6ljcml2ZW50LCBsZXMgYW5hbHlzZW50IHB1aXMgcmVudm9pZW50IGRlcyBpbmRpY2F0ZXVycyBhdXggc2VydmljZXMgcG91ciBkw6ljaWRlci4iPjxkZWZzPjxtYXJrZXIgaWQ9ImFyIiB2aWV3Qm94PSIwIDAgMTAgMTAiIHJlZlg9IjkiIHJlZlk9IjUiIG1hcmtlcldpZHRoPSI3IiBtYXJrZXJIZWlnaHQ9IjciIG9yaWVudD0iYXV0by1zdGFydC1yZXZlcnNlIj48cGF0aCBkPSJNMCAwTDEwIDVMMCAxMHoiIGZpbGw9IiMxNzE4MWMiLz48L21hcmtlcj48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM4MkY2RUIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3QzRERUIiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSIzMCIgeT0iMzAiIHdpZHRoPSI2MjAiIGhlaWdodD0iNzQwIiByeD0iMjQiIGZpbGw9IiNGMkZERjYiLz48dGV4dCB4PSI2MCIgeT0iNzQiIGZvbnQtc2l6ZT0iMTUiIGZvbnQtd2VpZ2h0PSI2MDAiIGxldHRlci1zcGFjaW5nPSIyLjUiIGZpbGw9IiM4YThmOWMiPkzigJlFTlRSRVBSSVNFIEVUIFNFUyBBUFBMSUNBVElPTlM8L3RleHQ+PHJlY3QgeD0iNjAiIHk9IjEwMCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSI5NCIgcng9IjE0IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNCN0Y2OUQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjE0OCIgeT0iMTQyIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5EaXJlY3Rpb248L3RleHQ+PHRleHQgeD0iMTQ4IiB5PSIxNjgiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPnBpbG90YWdlLCBidWRnZXQ8L3RleHQ+PHJlY3QgeD0iMjUwIiB5PSIxMDAiIHdpZHRoPSIxNzYiIGhlaWdodD0iOTQiIHJ4PSIxNCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQjdGNjlEIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIzMzgiIHk9IjE0MiIgZm9udC1zaXplPSIxOSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+Q29uY2VwdGlvbjwvdGV4dD48dGV4dCB4PSIzMzgiIHk9IjE2OCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+UExNPC90ZXh0PjxyZWN0IHg9IjQ0MCIgeT0iMTAwIiB3aWR0aD0iMTc2IiBoZWlnaHQ9Ijk0IiByeD0iMTQiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0I3RjY5RCIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTI4IiB5PSIxNDIiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkFjaGF0czwvdGV4dD48dGV4dCB4PSI1MjgiIHk9IjE2OCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+RVJQLCBwb3J0YWlsIGZvdXJuaXNzZXVyczwvdGV4dD48cmVjdCB4PSI2MCIgeT0iMjEwIiB3aWR0aD0iMTc2IiBoZWlnaHQ9Ijk0IiByeD0iMTQiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0I3RjY5RCIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iMTQ4IiB5PSIyNTIiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlByb2R1Y3Rpb248L3RleHQ+PHRleHQgeD0iMTQ4IiB5PSIyNzgiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPkVSUDwvdGV4dD48cmVjdCB4PSIyNTAiIHk9IjIxMCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSI5NCIgcng9IjE0IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNCN0Y2OUQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjMzOCIgeT0iMjUyIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5NYWdhc2luczwvdGV4dD48dGV4dCB4PSIzMzgiIHk9IjI3OCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+Y2Fpc3NlLCBwYWllbWVudDwvdGV4dD48cmVjdCB4PSI0NDAiIHk9IjIxMCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSI5NCIgcng9IjE0IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNCN0Y2OUQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjUyOCIgeT0iMjUyIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5DbGllbnRzPC90ZXh0Pjx0ZXh0IHg9IjUyOCIgeT0iMjc4IiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5DUk08L3RleHQ+PHJlY3QgeD0iNjAiIHk9IjMyMCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSI5NCIgcng9IjE0IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNCN0Y2OUQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjE0OCIgeT0iMzYyIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5GaW5hbmNlPC90ZXh0Pjx0ZXh0IHg9IjE0OCIgeT0iMzg4IiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5jb21wdGFiaWxpdMOpPC90ZXh0PjxyZWN0IHg9IjI1MCIgeT0iMzIwIiB3aWR0aD0iMTc2IiBoZWlnaHQ9Ijk0IiByeD0iMTQiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0I3RjY5RCIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iMzM4IiB5PSIzNjIiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlJIPC90ZXh0Pjx0ZXh0IHg9IjMzOCIgeT0iMzg4IiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5wYWllPC90ZXh0PjxyZWN0IHg9IjQ0MCIgeT0iMzIwIiB3aWR0aD0iMTc2IiBoZWlnaHQ9Ijk0IiByeD0iMTQiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0I3RjY5RCIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTI4IiB5PSIzNjIiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlJTRTwvdGV4dD48dGV4dCB4PSI1MjgiIHk9IjM4OCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+aW1wYWN0IENPMjwvdGV4dD48cmVjdCB4PSI2MCIgeT0iNTkwIiB3aWR0aD0iNTU2IiBoZWlnaHQ9IjEzMCIgcng9IjE2IiBmaWxsPSIjRkJGREUzIiBzdHJva2U9IiNFM0VFNEYiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjMzOCIgeT0iNjQyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5Ew6ljaXNpb25zIGRlcyBzZXJ2aWNlczwvdGV4dD48dGV4dCB4PSIzMzgiIHk9IjY3NiIgZm9udC1zaXplPSIxNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+cGlsb3RlciwgY29uY2V2b2lyLCB2ZW5kcmUsIHLDqWR1aXJlIGzigJlpbXBhY3Q8L3RleHQ+PHRleHQgeD0iMzM4IiB5PSI0NjAiIGZvbnQtc2l6ZT0iMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPkNoYXF1ZSBzZXJ2aWNlIGVucmVnaXN0cmUgc2VzIHByb3ByZXMgZG9ubsOpZXMsPC90ZXh0Pjx0ZXh0IHg9IjMzOCIgeT0iNDgyIiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5hdmVjIHNlcyBwcm9wcmVzIG1vdHMuPC90ZXh0PjxsaW5lIHgxPSI2NTIiIHkxPSIyNTUiIHgyPSI3MDgiIHkyPSIyNTUiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyLjUiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHRleHQgeD0iNjgwIiB5PSIyMzgiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmRvbm7DqWVzPC90ZXh0PjxsaW5lIHgxPSI3OTAiIHkxPSIxODEiIHgyPSI5MDAiIHkyPSIzMCIgc3Ryb2tlPSIjN0M0REVCIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2IiBvcGFjaXR5PSIuNiIvPjxsaW5lIHgxPSI3OTAiIHkxPSIzMjkiIHgyPSI5MDAiIHkyPSI3NzAiIHN0cm9rZT0iIzdDNERFQiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIgb3BhY2l0eT0iLjYiLz48bGluZSB4MT0iODM4IiB5MT0iMzA4IiB4Mj0iODc2IiB5Mj0iMzQ4IiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMTQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxjaXJjbGUgY3g9Ijc5MCIgY3k9IjI1NSIgcj0iNzQiIGZpbGw9IiNmZmYiIHN0cm9rZT0idXJsKCNnKSIgc3Ryb2tlLXdpZHRoPSI4Ii8+PHRleHQgeD0iNzkwIiB5PSIyNjQiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGxldHRlci1zcGFjaW5nPSIzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5EQVRBPC90ZXh0PjxyZWN0IHg9IjkwMCIgeT0iMzAiIHdpZHRoPSI2NzAiIGhlaWdodD0iNzQwIiByeD0iMjQiIGZpbGw9IiNGNkYyRkYiLz48dGV4dCB4PSI5MzAiIHk9Ijc0IiBmb250LXNpemU9IjE1IiBmb250LXdlaWdodD0iNjAwIiBsZXR0ZXItc3BhY2luZz0iMi41IiBmaWxsPSIjOGE4ZjljIj5aT09NIDogTEVTIE3DiVRJRVJTIERFIExBIERBVEE8L3RleHQ+PHJlY3QgeD0iOTMwIiB5PSIxMDAiIHdpZHRoPSI0MzAiIGhlaWdodD0iMTEwIiByeD0iMTYiIGZpbGw9IiNFNkZDRjkiIHN0cm9rZT0iIzgyRjZFQiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iOTY2IiBjeT0iMTQwIiByPSIxNiIgZmlsbD0iIzgyRjZFQiIvPjx0ZXh0IHg9Ijk2NiIgeT0iMTQ2IiBmb250LXNpemU9IjE2IiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj4xPC90ZXh0Pjx0ZXh0IHg9Ijk5NCIgeT0iMTQ2IiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjMTcxODFjIj5Db2xsZWN0ZXIgZXQgc3RvY2tlcjwvdGV4dD48dGV4dCB4PSI5OTQiIHk9IjE3NCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzE3MTgxYyI+RGF0YSBlbmdpbmVlcjwvdGV4dD48dGV4dCB4PSI5OTQiIHk9IjE5NiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzRiNGY1YSI+cGlwZWxpbmVzLCBwbGF0ZWZvcm1lIGRhdGE8L3RleHQ+PGxpbmUgeDE9IjExNDUiIHkxPSIyMTIiIHgyPSIxMTQ1IiB5Mj0iMjQ2IiBzdHJva2U9IiMxNzE4MWMiIHN0cm9rZS13aWR0aD0iMi41IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxyZWN0IHg9IjkzMCIgeT0iMjUwIiB3aWR0aD0iNDMwIiBoZWlnaHQ9IjExMCIgcng9IjE2IiBmaWxsPSIjRUVFN0ZEIiBzdHJva2U9IiM3QzRERUIiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9Ijk2NiIgY3k9IjI5MCIgcj0iMTYiIGZpbGw9IiM3QzRERUIiLz48dGV4dCB4PSI5NjYiIHk9IjI5NiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9IjcwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+MjwvdGV4dD48dGV4dCB4PSI5OTQiIHk9IjI5NiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iIzE3MTgxYyI+RMOpY3JpcmUgZXQgZ2FyYW50aXI8L3RleHQ+PHRleHQgeD0iOTk0IiB5PSIzMjQiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiMxNzE4MWMiPkRhdGEgb3duZXIsIGRhdGEgc3Rld2FyZDwvdGV4dD48dGV4dCB4PSI5OTQiIHk9IjM0NiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzRiNGY1YSI+ZMOpZmluaXRpb25zLCByw6hnbGVzLCBxdWFsaXTDqTwvdGV4dD48bGluZSB4MT0iMTE0NSIgeTE9IjM2MiIgeDI9IjExNDUiIHkyPSIzOTYiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyLjUiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iOTMwIiB5PSI0MDAiIHdpZHRoPSI0MzAiIGhlaWdodD0iMTEwIiByeD0iMTYiIGZpbGw9IiNGQ0VBRkMiIHN0cm9rZT0iI0UwNTZFNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iOTY2IiBjeT0iNDQwIiByPSIxNiIgZmlsbD0iI0UwNTZFNiIvPjx0ZXh0IHg9Ijk2NiIgeT0iNDQ2IiBmb250LXNpemU9IjE2IiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj4zPC90ZXh0Pjx0ZXh0IHg9Ijk5NCIgeT0iNDQ2IiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjMTcxODFjIj5BbmFseXNlciBldCBtZXN1cmVyPC90ZXh0Pjx0ZXh0IHg9Ijk5NCIgeT0iNDc0IiBmb250LXNpemU9IjE2IiBmaWxsPSIjMTcxODFjIj5EYXRhIGFuYWx5c3Q8L3RleHQ+PHRleHQgeD0iOTk0IiB5PSI0OTYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM0YjRmNWEiPmluZGljYXRldXJzLCB0YWJsZWF1eCBkZSBib3JkPC90ZXh0PjxsaW5lIHgxPSIxMTQ1IiB5MT0iNTEyIiB4Mj0iMTE0NSIgeTI9IjU0NiIgc3Ryb2tlPSIjMTcxODFjIiBzdHJva2Utd2lkdGg9IjIuNSIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48cmVjdCB4PSI5MzAiIHk9IjU1MCIgd2lkdGg9IjQzMCIgaGVpZ2h0PSIxMTAiIHJ4PSIxNiIgZmlsbD0iI0ZCRkRFMyIgc3Ryb2tlPSIjRDNERjNBIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSI5NjYiIGN5PSI1OTAiIHI9IjE2IiBmaWxsPSIjRDNERjNBIi8+PHRleHQgeD0iOTY2IiB5PSI1OTYiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPjQ8L3RleHQ+PHRleHQgeD0iOTk0IiB5PSI1OTYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiMxNzE4MWMiPlByw6lkaXJlIGV0IGF1dG9tYXRpc2VyPC90ZXh0Pjx0ZXh0IHg9Ijk5NCIgeT0iNjI0IiBmb250LXNpemU9IjE2IiBmaWxsPSIjMTcxODFjIj5EYXRhIHNjaWVudGlzdDwvdGV4dD48dGV4dCB4PSI5OTQiIHk9IjY0NiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzRiNGY1YSI+bW9kw6hsZXMsIHByw6l2aXNpb25zPC90ZXh0PjxyZWN0IHg9IjEzODUiIHk9IjEwMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyNjAiIHJ4PSIxNiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjN0M0REVCIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjcgNiIvPjx0ZXh0IHg9IjE0NjUiIHk9IjE1MCIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+RGF0YSBwcm9kdWN0PC90ZXh0Pjx0ZXh0IHg9IjE0NjUiIHk9IjE3NCIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+bWFuYWdlcjwvdGV4dD48dGV4dCB4PSIxNDY1IiB5PSIyMjAiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPnJlbGllIGxlcyBiZXNvaW5zPC90ZXh0Pjx0ZXh0IHg9IjE0NjUiIHk9IjI0MiIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+ZGVzIHNlcnZpY2VzIGF1eDwvdGV4dD48dGV4dCB4PSIxNDY1IiB5PSIyNjQiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPsOpcXVpcGVzIGRhdGE8L3RleHQ+PHJlY3QgeD0iMTM4NSIgeT0iNDAwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjI2MCIgcng9IjE2IiBmaWxsPSIjZmZmIiBzdHJva2U9IiM3QzRERUIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNyA2Ii8+PHRleHQgeD0iMTQ2NSIgeT0iNDUwIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5EYXRhPC90ZXh0Pjx0ZXh0IHg9IjE0NjUiIHk9IjQ3NCIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+YXJjaGl0ZWN0PC90ZXh0Pjx0ZXh0IHg9IjE0NjUiIHk9IjUyMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+ZGVzc2luZSBjb21tZW50PC90ZXh0Pjx0ZXh0IHg9IjE0NjUiIHk9IjU0MiIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+c3lzdMOobWVzIGV0IGRvbm7DqWVzPC90ZXh0Pjx0ZXh0IHg9IjE0NjUiIHk9IjU2NCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+c+KAmWFzc2VtYmxlbnQ8L3RleHQ+PHRleHQgeD0iMTQ2NSIgeT0iNjkwIiBmb250LXNpemU9IjEzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOGE4ZjljIj5zdXIgdG91dGUgbGEgY2hhw65uZTwvdGV4dD48cGF0aCBkPSJNOTMwIDQ1NSBIODcwIFY2NTUgSDYyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTcxODFjIiBzdHJva2Utd2lkdGg9IjIuNSIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48cmVjdCB4PSI2NTIiIHk9IjYyMCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyNiIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9Ijc1MiIgeT0iNjM4IiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5pbmRpY2F0ZXVyczwvdGV4dD48L3N2Zz4=" alt="À gauche, neuf services de l'entreprise et leurs applications. Leurs données passent par une loupe Data. À droite, quatre étapes : collecter et stocker (data engineer), décrire et garantir (data owner, data steward), analyser et mesurer (data analyst), prédire et automatiser (data scientist), avec le data product manager et le data architect sur toute la chaîne. Une flèche renvoie les indicateurs vers les décisions des services."></div>
+    
+  </div>
+</section>
+
+<section class="cols dense" data-tone="a">
+  <div class="wrap">
+<p class="fil"><span class="on">0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">0.1 — Les métiers</div>
+    <h2>Les grands métiers de la data</h2>
+    <div class="grid"><div class="card"><h3>Data engineer</h3><p>Rassemble les données sur une plateforme commune.</p></div><div class="card"><h3>Data owner et data steward</h3><p>Fixent les règles d'une donnée et les font respecter.</p></div><div class="card"><h3>Data analyst</h3><p>Transforme les données en indicateurs.</p></div><div class="card"><h3>Data scientist</h3><p>Construit des modèles pour prévoir.</p></div><div class="card"><h3>Data product manager</h3><p>Relie besoins des services et équipes data.</p></div><div class="card"><h3>Data architect</h3><p>Dessine l'ensemble des systèmes.</p></div></div>
+    <p class="source"><b>Source :</b> DAMA International, <i>DAMA-DMBOK</i>, 2e édition, 2017</p>
+  </div>
+</section>
+
+<section class="cols dense" data-tone="b">
+  <div class="wrap">
+<p class="fil"><span class="on">0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">0.2 — La difficulté</div>
+    <h2>Pourquoi c'est difficile en entreprise</h2>
+    <div class="grid"><div class="card"><h3>Des services séparés</h3><p>Chacun ses outils et ses mots.</p></div><div class="card"><h3>Des métiers séparés</h3><p>Un designer et un vendeur n'ont pas le même « produit ».</p></div><div class="card"><h3>Une vue partielle</h3><p>Peu de gens voient toute l'entreprise.</p></div></div>
+    <div class="example"><span class="tag">Pour l'impact CO2</span><p>La conception connaît la recette, les achats connaissent les fournisseurs, la RSE fixe l'objectif. Personne n'a tout.</p></div>
+    <p class="takeaway sm">Relier les données de tous les services : c'est la transversalité.</p>
+  </div>
+</section>
+
+<section class="cols dense" data-tone="c">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">1 — Comprendre · le problème</div>
+    <h2>Même question, trois réponses</h2>
+    <p class="lead">Pour calculer l'impact CO2, on demande à chaque fournisseur : « Donnez-nous votre méthode de production. »</p>
+    <div class="grid"><div class="card"><h3>Fournisseur du tissu</h3><p class="said">« Teinture en bain, 120 kWh par lot de 500 m. »</p></div><div class="card"><h3>Fournisseur des semelles</h3><p class="said">« Injection, 0,8 kg CO2e par paire, transport inclus. »</p></div><div class="card"><h3>Fournisseur des fermetures</h3><p class="said">« Procédé certifié ISO 14001. »</p></div></div>
+    <p class="takeaway sm">Impossible d'additionner ces réponses. Il manque un langage commun : quoi mesurer, dans quelle unité, sur quel périmètre.</p>
+    
+  </div>
+</section>
+
+<section data-tone="a">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">1.1 — Comprendre · le langage commun</div>
+    <h2>Le même mot ne veut pas dire la même chose partout</h2>
+    <p class="lead">Eric Evans parle d'« ubiquitous language » : un vocabulaire partagé par tous, sans ambiguïté. En entreprise, il faut le construire.</p>
+    <div class="example"><span class="tag">Exemple · retail</span><p>« Performance » : chiffre d'affaires face à l'objectif pour prévoir les ventes, nombre de ventes par vendeur pour les primes.</p></div>
+    <div class="example"><span class="tag">Pour l'impact CO2</span><p>On fixe une seule définition avec tous les fournisseurs : des kg CO2e, par unité produite, de la matière à la sortie d'usine.</p></div>
+    <p class="source"><b>Sources :</b> Eric Evans, <i>Domain-Driven Design</i>, 2003 · Martin Fowler, <a href="https://martinfowler.com/bliki/UbiquitousLanguage.html" target="_blank" rel="noopener">« Ubiquitous Language »</a>, 2006 · exemple retail : Gaëlle Seret, « From engineering execution to enterprise architecture: the Sales domain », Clean Data Architecture, 2025</p>
+  </div>
+</section>
+
+<section data-tone="b">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">1.2 — Comprendre · le métamodèle</div>
+    <h2>Des cases communes pour ranger les mots</h2>
+    <p class="lead">Un métamodèle décrit les cases où l'on range ce que fait l'entreprise.</p>
+    <p class="inline-quote">“a model of the model, i.e. a simplified model of an actual model of a circuit, system, or software-like entity”</p>
+    <p class="source"><b>Source :</b> contributeurs Wikipédia, <a href="https://en.wikipedia.org/wiki/Metamodeling" target="_blank" rel="noopener">« Metamodeling »</a></p>
+  </div>
+</section>
+
+<section class="atelier dense dark" data-tone="c">
+  <svg class="watermark-local" aria-hidden="true"><rect width="100%" height="100%" fill="url(#wm-dark)"/></svg><div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">1.3 — Comprendre · les cartes</div>
+    <h2>Classez les cartes dans le métamodèle</h2>
+    <p class="lead">Chaque carte décrit une partie de l'entreprise : un objectif, un métier, un processus, une donnée, une application ou une technologie.</p>
+    <div class="fams">
+      <div class="fam"><div class="lbl"><span class="sw" style="background:#F8D5F5"></span><h3>Cartes roses</h3></div><div class="chips c-rose"><span>Move people through the wonders of sport</span><span>Protect nature</span><span>Be used by all types of sports users</span><span>Reduce the company environmental footprint</span><span>Increase the company's revenue</span><span>Product CO2 impact</span><span>Net Sales</span></div></div>
+      <div class="fam"><div class="lbl"><span class="sw" style="background:#DFF5F3"></span><h3>Cartes turquoise</h3></div><div class="chips c-teal"><span>Conception</span><span>Sports</span><span>Retail</span><span>In-Store</span><span>Product Designer</span><span>Product Designer for food</span><span>Sales Associate</span><span>Sales Director</span><span>Sustainability practices</span><span>Product engineering</span><span>Product testing</span><span>Chemistry</span><span>Selling sport activities</span><span>Sports activity</span><span>Maintaining a store</span><span>Managing employees</span></div></div>
+      <div class="fam"><div class="lbl"><span class="sw" style="background:#C8F2D8"></span><h3>Cartes vertes</h3></div><div class="chips c-vert"><span>Client</span><span>Product</span><span>Sales</span><span>Supply</span><span>Know about your client</span><span>Understand the product sold</span><span>Understand the product produced</span><span>Understand the product conceived</span><span>Understand the product sold to my client</span><span>A product sold is beforehand produced</span></div></div>
+      <div class="fam"><div class="lbl"><span class="sw" style="background:#FDF7CF"></span><h3>Cartes jaunes</h3></div><div class="chips c-jaune"><span>Green Characteristics</span><span>Product Lifecycle Management (PLM)</span><span>Product Information Management (PIM)</span><span>Government Homologation App</span><span>Enterprise Resource Planning (ERP)</span><span>Accounting Module</span><span>Consolidation Module</span><span>Vendor Portal (MDM)</span><span>Point of Sales</span><span>Payment Application</span><span>Customer Relationship Management (CRM)</span><span>Co-creation application</span><span>Datalake</span><span>Monthly CO2 impact</span><span>Monthly Bonus</span><span>Wage Module</span></div></div>
+      <div class="fam"><div class="lbl"><span class="sw" style="background:#FBEADF"></span><h3>Cartes orange</h3></div><div class="chips c-orange"><span>AWS</span><span>Kafka</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="atelier dense" data-tone="a">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">1.3 — Comprendre · les cartes, suite</div>
+    <h2>Les cartes violettes</h2>
+    <p class="lead">Ce que font les métiers.</p>
+    <div class="fams solo">
+      <div class="fam"><div class="chips c-violet"><span>I design a product</span><span>Product</span><span>Client</span><span>Client Preferences</span><span>Product Brief</span><span>Product Component</span><span>Supplier</span><span>Product Test</span><span>Bill of Material</span><span>Homologation</span><span>Product lifecycle</span><span>I sell a product to my client</span><span>Transaction</span><span>Selection</span><span>Product Characteristics</span><span>Item</span><span>Product Availability</span><span>Product Price</span><span>Stock</span><span>As a Product Designer</span><span>As a Sales Associate</span><span>I register the purchase on my cash register</span><span>I need to know my market based clients habits</span><span>I learn from my clients to build requirements for a specific market</span><span>I create a product brief</span><span>I have the list of all possible product characteristics</span><span>I create a POC</span><span>I can order a first version with a supplier</span><span>I test the product</span><span>I have access to a list of clients to test the product</span><span>I finalize my product recipe</span><span>I can log recipes and create new versions</span><span>I homologate the product</span><span>I send the recipe to authorities for homologation</span><span>I deploy my product</span><span>I send the validated recipe to production teams</span><span>I display a list of products in my assortments</span><span>I need to propose a list of product</span><span>I select the list of products of my store</span><span>I advise clients</span><span>I need to have characteristics attached to the product</span><span>I discuss my client's requirement</span><span>I inform my client on the best product from a sustainability perspective</span><span>I need to have sustainability characteristics attached to the product</span><span>I need to collect payment</span><span>I look for the right item (product × color × size)</span><span>I need to have a product available in my store</span><span>I give the tariff to my client</span><span>I need to have a price for each item (product × color × size)</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="dense widefig corr" data-tone="b">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">1.4 — Comprendre · la correction</div>
+    <h2>Six familles, du pourquoi à la technique</h2>
+    <p class="lead">Chaque couleur répond à une question. L'impact CO2 traverse toutes les familles.</p>
+    <div class="visual fit wide"><img class="zoomable" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9Ijg0MCIgdmlld0JveD0iMCAwIDE1MDAgODQwIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIj48ZGVmcz48bWFya2VyIGlkPSJhciIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI5IiByZWZZPSI1IiBtYXJrZXJXaWR0aD0iNyIgbWFya2VySGVpZ2h0PSI3IiBvcmllbnQ9ImF1dG8iPjxwYXRoIGQ9Ik0wIDBMMTAgNUwwIDEweiIgZmlsbD0iIzE3MTgxYyIvPjwvbWFya2VyPjwvZGVmcz48cmVjdCB3aWR0aD0iMTUwMCIgaGVpZ2h0PSI4NDAiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI0MCIgeT0iNDQiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIGxldHRlci1zcGFjaW5nPSIyLjIiIGZpbGw9IiM4YThmOWMiPkZBTUlMTEU8L3RleHQ+PHRleHQgeD0iNDIwIiB5PSI0NCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjYwMCIgbGV0dGVyLXNwYWNpbmc9IjIuMiIgZmlsbD0iIzhhOGY5YyI+TEEgUVVFU1RJT048L3RleHQ+PHRleHQgeD0iNzAwIiB5PSI0NCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjYwMCIgbGV0dGVyLXNwYWNpbmc9IjIuMiIgZmlsbD0iIzhhOGY5YyI+RVhFTVBMRVMgRFUgSkVVPC90ZXh0Pjx0ZXh0IHg9IjExNTAiIHk9IjQ0IiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iNjAwIiBsZXR0ZXItc3BhY2luZz0iMi4yIiBmaWxsPSIjOGE4ZjljIj5GSUwgUk9VR0UgOiBM4oCZSU1QQUNUIENPMjwvdGV4dD48cmVjdCB4PSIzMCIgeT0iNzAiIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjExMCIgcng9IjE2IiBmaWxsPSIjRjhENUY1Ii8+PHRleHQgeD0iNTAiIHk9IjEzMiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzRiNGY1YSI+MTwvdGV4dD48dGV4dCB4PSI3NiIgeT0iMTMyIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjMTcxODFjIj5SYWlzb24gZOKAmcOqdHJlIGV0IG9iamVjdGlmczwvdGV4dD48dGV4dCB4PSI0MjAiIHk9IjEzMiIgZm9udC1zaXplPSIxOSIgZmlsbD0iIzE3MTgxYyI+UG91cnF1b2kgPzwvdGV4dD48cmVjdCB4PSI3MDAiIHk9IjkzLjAiIHdpZHRoPSIzMTYiIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNFOUE2RTQiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNzEyIiB5PSIxMTIuMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5Nb3ZlIHBlb3BsZSB0aHJvdWdoIHRoZSB3b25kZXJzIG9mIHNwb3J0PC90ZXh0PjxyZWN0IHg9IjcwMCIgeT0iMTI5LjAiIHdpZHRoPSIyNDMiIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNFOUE2RTQiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNzEyIiB5PSIxNDguMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5JbmNyZWFzZSB0aGUgY29tcGFueeKAmXMgcmV2ZW51ZTwvdGV4dD48cmVjdCB4PSI5NTEiIHk9IjEyOS4wIiB3aWR0aD0iODkiIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNFOUE2RTQiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iOTYzIiB5PSIxNDguMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5OZXQgU2FsZXM8L3RleHQ+PHJlY3QgeD0iMTE0MCIgeT0iODIiIHdpZHRoPSIzMzAiIGhlaWdodD0iODYiIHJ4PSIxMiIgZmlsbD0iI0Y4RDVGNSIgc3Ryb2tlPSIjRTlBNkU0IiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMzA1IiB5PSIxMDkuMCIgZm9udC1zaXplPSIxNS41IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5SZWR1Y2UgdGhlIGNvbXBhbnk8L3RleHQ+PHRleHQgeD0iMTMwNSIgeT0iMTMxLjAiIGZvbnQtc2l6ZT0iMTUuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+ZW52aXJvbm1lbnRhbCBmb290cHJpbnQ8L3RleHQ+PHRleHQgeD0iMTMwNSIgeT0iMTUzLjAiIGZvbnQtc2l6ZT0iMTUuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+4oaSIFByb2R1Y3QgQ08yIGltcGFjdDwvdGV4dD48bGluZSB4MT0iMTMwNSIgeTE9IjE2OSIgeDI9IjEzMDUiIHkyPSIyMDgiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyIiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxyZWN0IHg9IjMwIiB5PSIxOTgiIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjExMCIgcng9IjE2IiBmaWxsPSIjREZGNUYzIi8+PHRleHQgeD0iNTAiIHk9IjI2MCIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzRiNGY1YSI+MjwvdGV4dD48dGV4dCB4PSI3NiIgeT0iMjYwIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjMTcxODFjIj5BY3Rpdml0w6lzIGV0IG3DqXRpZXJzPC90ZXh0Pjx0ZXh0IHg9IjQyMCIgeT0iMjYwIiBmb250LXNpemU9IjE5IiBmaWxsPSIjMTcxODFjIj5RdWkgZmFpdCBxdW9pID88L3RleHQ+PHJlY3QgeD0iNzAwIiB5PSIyMzkuMCIgd2lkdGg9Ijk3IiBoZWlnaHQ9IjI4IiByeD0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjOURFM0RDIiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9IjcxMiIgeT0iMjU4LjAiIGZvbnQtc2l6ZT0iMTMuNSIgZmlsbD0iIzE3MTgxYyI+Q29uY2VwdGlvbjwvdGV4dD48cmVjdCB4PSI4MDUiIHk9IjIzOS4wIiB3aWR0aD0iNjciIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiM5REUzREMiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iODE3IiB5PSIyNTguMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5SZXRhaWw8L3RleHQ+PHJlY3QgeD0iODgwIiB5PSIyMzkuMCIgd2lkdGg9IjEzMyIgaGVpZ2h0PSIyOCIgcng9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzlERTNEQyIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSI4OTIiIHk9IjI1OC4wIiBmb250LXNpemU9IjEzLjUiIGZpbGw9IiMxNzE4MWMiPlNhbGVzIEFzc29jaWF0ZTwvdGV4dD48cmVjdCB4PSIxMTQwIiB5PSIyMTAiIHdpZHRoPSIzMzAiIGhlaWdodD0iODYiIHJ4PSIxMiIgZmlsbD0iI0RGRjVGMyIgc3Ryb2tlPSIjOURFM0RDIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMzA1IiB5PSIyNTkuMCIgZm9udC1zaXplPSIxNS41IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5Qcm9kdWN0IERlc2lnbmVyPC90ZXh0PjxsaW5lIHgxPSIxMzA1IiB5MT0iMjk3IiB4Mj0iMTMwNSIgeTI9IjMzNiIgc3Ryb2tlPSIjMTcxODFjIiBzdHJva2Utd2lkdGg9IjIiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iMzAiIHk9IjMyNiIgd2lkdGg9IjEwODAiIGhlaWdodD0iMTEwIiByeD0iMTYiIGZpbGw9IiNFN0RBRjQiLz48dGV4dCB4PSI1MCIgeT0iMzg4IiBmb250LXNpemU9IjE1IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjNGI0ZjVhIj4zPC90ZXh0Pjx0ZXh0IHg9Ijc2IiB5PSIzODgiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiMxNzE4MWMiPlByb2Nlc3N1cyBldCBvYmpldHMgbcOpdGllcjwvdGV4dD48dGV4dCB4PSI0MjAiIHk9IjM4OCIgZm9udC1zaXplPSIxOSIgZmlsbD0iIzE3MTgxYyI+Q29tbWVudCA/PC90ZXh0PjxyZWN0IHg9IjcwMCIgeT0iMzQ5LjAiIHdpZHRoPSIyMzUiIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNDM0E2RTgiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNzEyIiB5PSIzNjguMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5JIHNlbGwgYSBwcm9kdWN0IHRvIG15IGNsaWVudDwvdGV4dD48cmVjdCB4PSI5NDMiIHk9IjM0OS4wIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjI4IiByeD0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQzNBNkU4IiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9Ijk1NSIgeT0iMzY4LjAiIGZvbnQtc2l6ZT0iMTMuNSIgZmlsbD0iIzE3MTgxYyI+QmlsbCBvZiBNYXRlcmlhbDwvdGV4dD48cmVjdCB4PSI3MDAiIHk9IjM4NS4wIiB3aWR0aD0iNjciIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNDM0E2RTgiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNzEyIiB5PSI0MDQuMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5DbGllbnQ8L3RleHQ+PHJlY3QgeD0iMTE0MCIgeT0iMzM4IiB3aWR0aD0iMzMwIiBoZWlnaHQ9Ijg2IiByeD0iMTIiIGZpbGw9IiNFN0RBRjQiIHN0cm9rZT0iI0MzQTZFOCIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iMTMwNSIgeT0iMzc2LjAiIGZvbnQtc2l6ZT0iMTUuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+SSBuZWVkIHRvIGhhdmUgc3VzdGFpbmFiaWxpdHk8L3RleHQ+PHRleHQgeD0iMTMwNSIgeT0iMzk4LjAiIGZvbnQtc2l6ZT0iMTUuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+Y2hhcmFjdGVyaXN0aWNzIGF0dGFjaGVkIHRvIHRoZSBwcm9kdWN0PC90ZXh0PjxsaW5lIHgxPSIxMzA1IiB5MT0iNDI1IiB4Mj0iMTMwNSIgeTI9IjQ2NCIgc3Ryb2tlPSIjMTcxODFjIiBzdHJva2Utd2lkdGg9IjIiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iMzAiIHk9IjQ1NCIgd2lkdGg9IjEwODAiIGhlaWdodD0iMTEwIiByeD0iMTYiIGZpbGw9IiNDOEYyRDgiLz48dGV4dCB4PSI1MCIgeT0iNTE2IiBmb250LXNpemU9IjE1IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjNGI0ZjVhIj40PC90ZXh0Pjx0ZXh0IHg9Ijc2IiB5PSI1MTYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiMxNzE4MWMiPkRvbWFpbmVzIGRlIGRvbm7DqWVzPC90ZXh0Pjx0ZXh0IHg9IjQyMCIgeT0iNTE2IiBmb250LXNpemU9IjE5IiBmaWxsPSIjMTcxODFjIj5RdWVsbGVzIGRvbm7DqWVzID88L3RleHQ+PHJlY3QgeD0iNzAwIiB5PSI0OTUuMCIgd2lkdGg9IjY3IiBoZWlnaHQ9IjI4IiByeD0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjOEZEQ0FEIiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9IjcxMiIgeT0iNTE0LjAiIGZvbnQtc2l6ZT0iMTMuNSIgZmlsbD0iIzE3MTgxYyI+Q2xpZW50PC90ZXh0PjxyZWN0IHg9Ijc3NSIgeT0iNDk1LjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyOCIgcng9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzhGRENBRCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSI3ODciIHk9IjUxNC4wIiBmb250LXNpemU9IjEzLjUiIGZpbGw9IiMxNzE4MWMiPlNhbGVzPC90ZXh0PjxyZWN0IHg9Ijg0MyIgeT0iNDk1LjAiIHdpZHRoPSI2NyIgaGVpZ2h0PSIyOCIgcng9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzhGRENBRCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSI4NTUiIHk9IjUxNC4wIiBmb250LXNpemU9IjEzLjUiIGZpbGw9IiMxNzE4MWMiPlN1cHBseTwvdGV4dD48cmVjdCB4PSIxMTQwIiB5PSI0NjYiIHdpZHRoPSIzMzAiIGhlaWdodD0iODYiIHJ4PSIxMiIgZmlsbD0iI0M4RjJEOCIgc3Ryb2tlPSIjOEZEQ0FEIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMzA1IiB5PSI1MDQuMCIgZm9udC1zaXplPSIxNS41IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5VbmRlcnN0YW5kIHRoZSBwcm9kdWN0PC90ZXh0Pjx0ZXh0IHg9IjEzMDUiIHk9IjUyNi4wIiBmb250LXNpemU9IjE1LjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPmNvbmNlaXZlZDwvdGV4dD48bGluZSB4MT0iMTMwNSIgeTE9IjU1MyIgeDI9IjEzMDUiIHkyPSI1OTIiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyIiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxyZWN0IHg9IjMwIiB5PSI1ODIiIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjExMCIgcng9IjE2IiBmaWxsPSIjRkRGN0NGIi8+PHRleHQgeD0iNTAiIHk9IjY0NCIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzRiNGY1YSI+NTwvdGV4dD48dGV4dCB4PSI3NiIgeT0iNjQ0IiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjMTcxODFjIj5BcHBsaWNhdGlvbnM8L3RleHQ+PHRleHQgeD0iNDIwIiB5PSI2NDQiIGZvbnQtc2l6ZT0iMTkiIGZpbGw9IiMxNzE4MWMiPk/DuSBzb250LWVsbGVzIGVucmVnaXN0csOpZXMgPzwvdGV4dD48cmVjdCB4PSI3MDAiIHk9IjYyMy4wIiB3aWR0aD0iNDUiIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNFQkRDN0EiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNzEyIiB5PSI2NDIuMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5FUlA8L3RleHQ+PHJlY3QgeD0iNzUzIiB5PSI2MjMuMCIgd2lkdGg9IjQ1IiBoZWlnaHQ9IjI4IiByeD0iNyIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjRUJEQzdBIiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9Ijc2NSIgeT0iNjQyLjAiIGZvbnQtc2l6ZT0iMTMuNSIgZmlsbD0iIzE3MTgxYyI+Q1JNPC90ZXh0PjxyZWN0IHg9IjgwNiIgeT0iNjIzLjAiIHdpZHRoPSIxMjYiIGhlaWdodD0iMjgiIHJ4PSI3IiBmaWxsPSIjZmZmIiBzdHJva2U9IiNFQkRDN0EiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iODE4IiB5PSI2NDIuMCIgZm9udC1zaXplPSIxMy41IiBmaWxsPSIjMTcxODFjIj5Qb2ludCBvZiBTYWxlczwvdGV4dD48cmVjdCB4PSIxMTQwIiB5PSI1OTQiIHdpZHRoPSIzMzAiIGhlaWdodD0iODYiIHJ4PSIxMiIgZmlsbD0iI0ZERjdDRiIgc3Ryb2tlPSIjRUJEQzdBIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMzA1IiB5PSI2NDMuMCIgZm9udC1zaXplPSIxNS41IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5QTE08L3RleHQ+PGxpbmUgeDE9IjEzMDUiIHkxPSI2ODEiIHgyPSIxMzA1IiB5Mj0iNzIwIiBzdHJva2U9IiMxNzE4MWMiIHN0cm9rZS13aWR0aD0iMiIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48cmVjdCB4PSIzMCIgeT0iNzEwIiB3aWR0aD0iMTA4MCIgaGVpZ2h0PSIxMTAiIHJ4PSIxNiIgZmlsbD0iI0ZCRUFERiIvPjx0ZXh0IHg9IjUwIiB5PSI3NzIiIGZvbnQtc2l6ZT0iMTUiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiM0YjRmNWEiPjY8L3RleHQ+PHRleHQgeD0iNzYiIHk9Ijc3MiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iIzE3MTgxYyI+SW5mcmFzdHJ1Y3R1cmU8L3RleHQ+PHRleHQgeD0iNDIwIiB5PSI3NzIiIGZvbnQtc2l6ZT0iMTkiIGZpbGw9IiMxNzE4MWMiPlN1ciBxdW9pIHRvdXJuZSBsZSBzeXN0w6htZSA/PC90ZXh0PjxyZWN0IHg9IjcwMCIgeT0iNzUxLjAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIyOCIgcng9IjciIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0VCQzNBNiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSI3MTIiIHk9Ijc3MC4wIiBmb250LXNpemU9IjEzLjUiIGZpbGw9IiMxNzE4MWMiPkthZmthPC90ZXh0PjxyZWN0IHg9IjExNDAiIHk9IjcyMiIgd2lkdGg9IjMzMCIgaGVpZ2h0PSI4NiIgcng9IjEyIiBmaWxsPSIjRkJFQURGIiBzdHJva2U9IiNFQkMzQTYiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjEzMDUiIHk9Ijc3MS4wIiBmb250LXNpemU9IjE1LjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkFXUzwvdGV4dD48dGV4dCB4PSIxMzA1IiB5PSIxOTMuMCIgZm9udC1zaXplPSIwIiBmaWxsPSJub25lIj48L3RleHQ+PC9zdmc+" alt="Tableau de correction en six lignes : 1 raison d'être et objectifs (pourquoi ?), 2 activités et métiers (qui fait quoi ?), 3 processus et objets métier (comment ?), 4 domaines de données (quelles données ?), 5 applications (où sont-elles enregistrées ?), 6 infrastructure (sur quoi tourne le système ?). À droite, le fil rouge de l'impact CO2 à travers les six familles."></div>
+    
+  </div>
+</section>
+
+<section class="split livrable" data-tone="c">
+  <div class="wrap">
+    <div>
+      <p class="fil"><span>0 · Entreprise</span><span class="on">1 · Comprendre</span><span>2 · Trouver</span><span>3 · Vérifier</span></p>
+      <div class="kicker">Point d'étape · Comprendre</div>
+      <h2>On sait de quoi on parle, et pour qui</h2>
+    </div>
+    <div class="fiche" role="group" aria-label="Fiche · Product CO2 impact"><p class="fiche-t">Fiche · Product CO2 impact</p><dl><dt class="new">Nom<small>Comprendre</small></dt><dd class="new">Product CO2 impact</dd><dt class="new">Définition<small>Comprendre</small></dt><dd class="new">Les émissions de CO2 d'un produit sur son cycle de vie, en kg CO2e par unité.</dd><dt class="new">Pour qui<small>Comprendre</small></dt><dd class="new">La RSE pour réduire l'empreinte, le designer pour choisir les matériaux, le vendeur pour conseiller le client.</dd><dt>Lignage<small>Trouver</small></dt><dd class="todo">D'où vient la donnée, étape par étape.</dd><dt>Producteur<small>Trouver</small></dt><dd class="todo">L'équipe qui produit l'indicateur.</dd><dt>Contrôles<small>Vérifier</small></dt><dd class="todo">Les règles vérifiées à chaque étape.</dd><dt>Mise à jour<small>Vérifier</small></dt><dd class="todo">À quelle fréquence le chiffre change.</dd></dl></div>
+  </div>
+</section>
+
+<section class="cols dense" data-tone="a">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">2 — Trouver · le problème</div>
+    <h2>Une donnée, trois endroits</h2>
+    <p class="lead">La RSE cherche l'impact CO2 des produits. Elle trouve trois réponses.</p>
+    <div class="grid"><div class="card"><h3>Un fichier Excel</h3><p class="said">« Envoyé par mail l'an dernier. »</p></div><div class="card"><h3>Le PLM</h3><p class="said">« Rempli par le designer. »</p></div><div class="card"><h3>Le datalake</h3><p class="said">« Trois tables : co2, co2_v2, co2_final. »</p></div></div>
+    <p class="takeaway sm">Trois endroits, trois chiffres. Il manque une carte : qui produit la donnée, où, et par où elle passe.</p>
+    
+  </div>
+</section>
+
+<section class="cols fourcols dense" data-tone="b">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">2.1 — Trouver · l'architecture d'entreprise</div>
+    <h2>L'architecture d'entreprise : quatre couches</h2>
+    <p class="lead">Elle décrit comment l'organisation, ses données, ses applications et sa technique s'assemblent. C'est la carte qui permet de chercher au bon endroit.</p>
+    <div class="grid"><div class="card"><h3>Métier</h3><p>La stratégie, l'organisation et les processus.</p></div><div class="card"><h3>Données</h3><p>Les données de l'entreprise et leur structure.</p></div><div class="card"><h3>Applications</h3><p>Les logiciels et leurs échanges.</p></div><div class="card"><h3>Technologie</h3><p>Serveurs, réseaux, cloud.</p></div></div>
+    <div class="example"><span class="tag">Pour l'impact CO2</span><p>Métier : réduire l'empreinte. Données : les caractéristiques produit. Application : le PLM. Technologie : le cloud.</p></div>
+    <p class="source"><b>Source :</b> The Open Group, <i>The TOGAF Standard</i>, domaines d'architecture, via <a href="https://cioindex.com/reference/the-togaf-standard-what-it-is-how-it-works-and-why-it-matters-for-enterprise-architecture/" target="_blank" rel="noopener">CIO Index</a></p>
+  </div>
+</section>
+
+<section class="dense widefig" data-tone="c">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">2.2 — Trouver · les processus métier</div>
+    <h2>Trouver l'étape qui crée la donnée</h2>
+    <p class="lead">Une donnée naît à une étape précise d'un processus métier. Pour la trouver, on suit le processus. L'impact CO2 naît quand le designer finalise la recette, et il sert quand le vendeur conseille le client.</p>
+    <div class="visual fit wide"><img class="zoomable" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTgwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDE1ODAgNjAwIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkRldXggcHJvY2Vzc3VzIG3DqXRpZXIuIENvbmNldm9pciwgcGFyIGxlIHByb2R1Y3QgZGVzaWduZXIgOiBicmllZiwgY2FyYWN0w6lyaXN0aXF1ZXMsIHByb3RvdHlwZSwgdGVzdCwgcmVjZXR0ZSBmaW5hbGUsIGhvbW9sb2dhdGlvbiwgZMOpcGxvaWVtZW50LiBM4oCZaW1wYWN0IENPMiBlc3QgY3LDqcOpIMOgIGzigJnDqXRhcGUgcmVjZXR0ZSBmaW5hbGUsIGRhbnMgbGUgUExNLiBWZW5kcmUsIHBhciBsZSB2ZW5kZXVyIDogYXNzb3J0aW1lbnQsIGNvbnNlaWwgY2xpZW50LCBjaG9peCBkZSBs4oCZYXJ0aWNsZSwgcGFpZW1lbnQuIEzigJlpbXBhY3QgQ08yIGVzdCB1dGlsaXPDqSDDoCBs4oCZw6l0YXBlIGNvbnNlaWwgY2xpZW50LCB2aWEgbGEgZmljaGUgcHJvZHVpdCBkdSBQSU0uIj48ZGVmcz48bWFya2VyIGlkPSJhciIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI5IiByZWZZPSI1IiBtYXJrZXJXaWR0aD0iNiIgbWFya2VySGVpZ2h0PSI2IiBvcmllbnQ9ImF1dG8iPjxwYXRoIGQ9Ik0wIDBMMTAgNUwwIDEweiIgZmlsbD0iIzhhOGY5YyIvPjwvbWFya2VyPjxtYXJrZXIgaWQ9ImF2IiB2aWV3Qm94PSIwIDAgMTAgMTAiIHJlZlg9IjkiIHJlZlk9IjUiIG1hcmtlcldpZHRoPSI3IiBtYXJrZXJIZWlnaHQ9IjciIG9yaWVudD0iYXV0byI+PHBhdGggZD0iTTAgMEwxMCA1TDAgMTB6IiBmaWxsPSIjN0M0REVCIi8+PC9tYXJrZXI+PC9kZWZzPjxyZWN0IHdpZHRoPSIxNTgwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjIwIiB5PSIzMCIgd2lkdGg9IjE1NDAiIGhlaWdodD0iMjMwIiByeD0iMTgiIGZpbGw9IiNGNkYyRkYiLz48dGV4dCB4PSI0NCIgeT0iNzgiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxNzE4MWMiPkNvbmNldm9pcjwvdGV4dD48dGV4dCB4PSI0NCIgeT0iMTA0IiBmb250LXNpemU9IjE0IiBmaWxsPSIjNGI0ZjVhIj5Qcm9kdWN0IERlc2lnbmVyPC90ZXh0PjxyZWN0IHg9IjIzMCIgeT0iMTQwIiB3aWR0aD0iMTY4IiBoZWlnaHQ9Ijc2IiByeD0iMTIiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0M5Q0NENiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSIzMTQuMCIgeT0iMTczIiBmb250LXNpemU9IjE2LjUiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkJyaWVmPC90ZXh0Pjx0ZXh0IHg9IjMxNC4wIiB5PSIxOTYiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmNvLWNyw6lhdGlvbjwvdGV4dD48bGluZSB4MT0iNDAwIiB5MT0iMTc4IiB4Mj0iNDE3IiB5Mj0iMTc4IiBzdHJva2U9IiM4YThmOWMiIHN0cm9rZS13aWR0aD0iMiIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48cmVjdCB4PSI0MjAiIHk9IjE0MCIgd2lkdGg9IjE2OCIgaGVpZ2h0PSI3NiIgcng9IjEyIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNDOUNDRDYiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNTA0LjAiIHk9IjE3MyIgZm9udC1zaXplPSIxNi41IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5DYXJhY3TDqXJpc3RpcXVlczwvdGV4dD48dGV4dCB4PSI1MDQuMCIgeT0iMTk2IiBmb250LXNpemU9IjEzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5QTE08L3RleHQ+PGxpbmUgeDE9IjU5MCIgeTE9IjE3OCIgeDI9IjYwNyIgeTI9IjE3OCIgc3Ryb2tlPSIjOGE4ZjljIiBzdHJva2Utd2lkdGg9IjIiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iNjEwIiB5PSIxNDAiIHdpZHRoPSIxNjgiIGhlaWdodD0iNzYiIHJ4PSIxMiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQzlDQ0Q2IiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9IjY5NC4wIiB5PSIxNzMiIGZvbnQtc2l6ZT0iMTYuNSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+UHJvdG90eXBlPC90ZXh0Pjx0ZXh0IHg9IjY5NC4wIiB5PSIxOTYiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPnBvcnRhaWwgZm91cm5pc3NldXJzPC90ZXh0PjxsaW5lIHgxPSI3ODAiIHkxPSIxNzgiIHgyPSI3OTciIHkyPSIxNzgiIHN0cm9rZT0iIzhhOGY5YyIgc3Ryb2tlLXdpZHRoPSIyIiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxyZWN0IHg9IjgwMCIgeT0iMTQwIiB3aWR0aD0iMTY4IiBoZWlnaHQ9Ijc2IiByeD0iMTIiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0M5Q0NENiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSI4ODQuMCIgeT0iMTczIiBmb250LXNpemU9IjE2LjUiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlRlc3Q8L3RleHQ+PHRleHQgeD0iODg0LjAiIHk9IjE5NiIgZm9udC1zaXplPSIxMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+UExNPC90ZXh0PjxsaW5lIHgxPSI5NzAiIHkxPSIxNzgiIHgyPSI5ODciIHkyPSIxNzgiIHN0cm9rZT0iIzhhOGY5YyIgc3Ryb2tlLXdpZHRoPSIyIiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxyZWN0IHg9Ijk5MCIgeT0iMTQwIiB3aWR0aD0iMTY4IiBoZWlnaHQ9Ijc2IiByeD0iMTIiIGZpbGw9IiNGMUVBRkQiIHN0cm9rZT0iIzdDNERFQiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHRleHQgeD0iMTA3NC4wIiB5PSIxNzMiIGZvbnQtc2l6ZT0iMTYuNSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+UmVjZXR0ZSBmaW5hbGU8L3RleHQ+PHRleHQgeD0iMTA3NC4wIiB5PSIxOTYiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPlBMTTwvdGV4dD48cmVjdCB4PSI5OTkuMCIgeT0iMTA2IiB3aWR0aD0iMTUwIiBoZWlnaHQ9IjI0IiByeD0iMTIiIGZpbGw9IiM3QzRERUIiLz48dGV4dCB4PSIxMDc0LjAiIHk9IjEyMi41IiBmb250LXNpemU9IjEyLjUiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPmNyw6llIGzigJlpbXBhY3QgQ08yPC90ZXh0PjxsaW5lIHgxPSIxMTYwIiB5MT0iMTc4IiB4Mj0iMTE3NyIgeTI9IjE3OCIgc3Ryb2tlPSIjOGE4ZjljIiBzdHJva2Utd2lkdGg9IjIiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iMTE4MCIgeT0iMTQwIiB3aWR0aD0iMTY4IiBoZWlnaHQ9Ijc2IiByeD0iMTIiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0M5Q0NENiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSIxMjY0LjAiIHk9IjE3MyIgZm9udC1zaXplPSIxNi41IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5Ib21vbG9nYXRpb248L3RleHQ+PHRleHQgeD0iMTI2NC4wIiB5PSIxOTYiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmFwcCBob21vbG9nYXRpb248L3RleHQ+PGxpbmUgeDE9IjEzNTAiIHkxPSIxNzgiIHgyPSIxMzY3IiB5Mj0iMTc4IiBzdHJva2U9IiM4YThmOWMiIHN0cm9rZS13aWR0aD0iMiIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48cmVjdCB4PSIxMzcwIiB5PSIxNDAiIHdpZHRoPSIxNjgiIGhlaWdodD0iNzYiIHJ4PSIxMiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQzlDQ0Q2IiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9IjE0NTQuMCIgeT0iMTczIiBmb250LXNpemU9IjE2LjUiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkTDqXBsb2llbWVudDwvdGV4dD48dGV4dCB4PSIxNDU0LjAiIHk9IjE5NiIgZm9udC1zaXplPSIxMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+RVJQPC90ZXh0PjxyZWN0IHg9IjIwIiB5PSIzMDAiIHdpZHRoPSIxNTQwIiBoZWlnaHQ9IjIzMCIgcng9IjE4IiBmaWxsPSIjRkRGMkZDIi8+PHRleHQgeD0iNDQiIHk9IjM0OCIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzE3MTgxYyI+VmVuZHJlPC90ZXh0Pjx0ZXh0IHg9IjQ0IiB5PSIzNzQiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM0YjRmNWEiPlZlbmRldXIgZW4gbWFnYXNpbjwvdGV4dD48cmVjdCB4PSIzNTAiIHk9IjQxMCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSI3NiIgcng9IjEyIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNDOUNDRDYiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHRleHQgeD0iNDUwLjAiIHk9IjQ0MyIgZm9udC1zaXplPSIxNi41IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5Bc3NvcnRpbWVudDwvdGV4dD48dGV4dCB4PSI0NTAuMCIgeT0iNDY2IiBmb250LXNpemU9IjEzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5QSU08L3RleHQ+PGxpbmUgeDE9IjU1MiIgeTE9IjQ0OCIgeDI9IjU4NyIgeTI9IjQ0OCIgc3Ryb2tlPSIjOGE4ZjljIiBzdHJva2Utd2lkdGg9IjIiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iNTkwIiB5PSI0MTAiIHdpZHRoPSIyMDAiIGhlaWdodD0iNzYiIHJ4PSIxMiIgZmlsbD0iI0ZDRUFGQyIgc3Ryb2tlPSIjRTA1NkU2IiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI2OTAuMCIgeT0iNDQzIiBmb250LXNpemU9IjE2LjUiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkNvbnNlaWwgY2xpZW50PC90ZXh0Pjx0ZXh0IHg9IjY5MC4wIiB5PSI0NjYiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPlBJTSDCtyBmaWNoZSBwcm9kdWl0PC90ZXh0PjxyZWN0IHg9IjYxNS4wIiB5PSIzNzYiIHdpZHRoPSIxNTAiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0iI0UwNTZFNiIvPjx0ZXh0IHg9IjY5MC4wIiB5PSIzOTIuNSIgZm9udC1zaXplPSIxMi41IiBmb250LXdlaWdodD0iNzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIj51dGlsaXNlIGzigJlpbXBhY3QgQ08yPC90ZXh0PjxsaW5lIHgxPSI3OTIiIHkxPSI0NDgiIHgyPSI4MjciIHkyPSI0NDgiIHN0cm9rZT0iIzhhOGY5YyIgc3Ryb2tlLXdpZHRoPSIyIiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxyZWN0IHg9IjgzMCIgeT0iNDEwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9Ijc2IiByeD0iMTIiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI0M5Q0NENiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48dGV4dCB4PSI5MzAuMCIgeT0iNDQzIiBmb250LXNpemU9IjE2LjUiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkNob2l4IGRlIGzigJlhcnRpY2xlPC90ZXh0Pjx0ZXh0IHg9IjkzMC4wIiB5PSI0NjYiIGZvbnQtc2l6ZT0iMTMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPlBJTSDCtyBzdG9jayBFUlA8L3RleHQ+PGxpbmUgeDE9IjEwMzIiIHkxPSI0NDgiIHgyPSIxMDY3IiB5Mj0iNDQ4IiBzdHJva2U9IiM4YThmOWMiIHN0cm9rZS13aWR0aD0iMiIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48cmVjdCB4PSIxMDcwIiB5PSI0MTAiIHdpZHRoPSIyMDAiIGhlaWdodD0iNzYiIHJ4PSIxMiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjQzlDQ0Q2IiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9IjExNzAuMCIgeT0iNDQzIiBmb250LXNpemU9IjE2LjUiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlBhaWVtZW50PC90ZXh0Pjx0ZXh0IHg9IjExNzAuMCIgeT0iNDY2IiBmb250LXNpemU9IjEzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5jYWlzc2U8L3RleHQ+PHBhdGggZD0iTTEwNzQuMCAyMTggVjMwMS4wIEg2OTAuMCBWMzcyIiBmaWxsPSJub25lIiBzdHJva2U9IiM3QzRERUIiIHN0cm9rZS13aWR0aD0iMi42IiBzdHJva2UtZGFzaGFycmF5PSI4IDYiIG1hcmtlci1lbmQ9InVybCgjYXYpIi8+PHJlY3QgeD0iNzY3LjAiIHk9IjI4Ny4wIiB3aWR0aD0iMjMwIiBoZWlnaHQ9IjI2IiByeD0iNiIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9Ijg4Mi4wIiB5PSIzMDUuMCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdDNERFQiI+bGEgZG9ubsOpZSBwYXNzZSBkdSBQTE0gYXUgUElNPC90ZXh0Pjx0ZXh0IHg9IjI0IiB5PSI1NzYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM4YThmOWMiPsOJdGFwZXMgdGlyw6llcyBkZXMgY2FydGVzIHZpb2xldHRlcyBkdSBqZXUgwrcgc291cyBjaGFxdWUgw6l0YXBlLCBs4oCZYXBwbGljYXRpb24gdXRpbGlzw6llPC90ZXh0Pjwvc3ZnPg==" alt="Deux processus métier. Concevoir, par le product designer : brief, caractéristiques, prototype, test, recette finale, homologation, déploiement. L'impact CO2 est créé à l'étape recette finale, dans le PLM. Vendre, par le vendeur : assortiment, conseil client, choix de l'article, paiement. L'impact CO2 est utilisé à l'étape conseil client, via la fiche produit du PIM."></div>
+    
+  </div>
+</section>
+
+<section class="dense widefig" data-tone="a">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">2.3 — Trouver · les applications</div>
+    <h2>Chaque besoin a son application, et elles s'échangent des données</h2>
+    <p class="lead">La carte des applications montre où naît chaque donnée et par où elle passe. L'impact CO2 naît dans le PLM.</p>
+    <div class="visual fit wide"><img class="zoomable" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTYwIiBoZWlnaHQ9IjY0MCIgdmlld0JveD0iMCAwIDE1NjAgNjQwIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkNhcnRlIGRlcyBhcHBsaWNhdGlvbnMgOiBsZSBwb3J0YWlsIGZvdXJuaXNzZXVycyBlbnZvaWUgbGVzIGNvbXBvc2FudHMgYXUgUExNIDsgbGUgUExNIGVudm9pZSBsZXMgY2FyYWN0w6lyaXN0aXF1ZXMgcHJvZHVpdCwgZG9udCBsJ2ltcGFjdCBDTzIsIGF1IFBJTSBldCBsYSBub21lbmNsYXR1cmUgw6AgbCdFUlAgOyBsZSBQSU0gZW52b2llIHByaXggZXQgZmljaGVzIMOgIGxhIGNhaXNzZSA7IGxhIGNhaXNzZSBlbnZvaWUgbGVzIHZlbnRlcyDDoCBsJ0VSUCBldCBsZXMgYWNoYXRzIGNsaWVudHMgYXUgQ1JNIDsgdG91dGVzIGxlcyBhcHBsaWNhdGlvbnMgc29udCBjb3Bpw6llcyBjaGFxdWUgbnVpdCBkYW5zIGxlIGRhdGFsYWtlLiI+PGRlZnM+PG1hcmtlciBpZD0iYXIiIHZpZXdCb3g9IjAgMCAxMCAxMCIgcmVmWD0iOSIgcmVmWT0iNSIgbWFya2VyV2lkdGg9IjciIG1hcmtlckhlaWdodD0iNyIgb3JpZW50PSJhdXRvIj48cGF0aCBkPSJNMCAwTDEwIDVMMCAxMHoiIGZpbGw9IiMxNzE4MWMiLz48L21hcmtlcj48bWFya2VyIGlkPSJhdiIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI5IiByZWZZPSI1IiBtYXJrZXJXaWR0aD0iNyIgbWFya2VySGVpZ2h0PSI3IiBvcmllbnQ9ImF1dG8iPjxwYXRoIGQ9Ik0wIDBMMTAgNUwwIDEweiIgZmlsbD0iIzdDNERFQiIvPjwvbWFya2VyPjwvZGVmcz48cmVjdCB3aWR0aD0iMTU2MCIgaGVpZ2h0PSI2NDAiIGZpbGw9IiNmZmYiLz48cmVjdCB4PSI0MCIgeT0iNzAiIHdpZHRoPSIyMTAiIGhlaWdodD0iOTYiIHJ4PSIxNCIgZmlsbD0iI0ZERjdDRiIgc3Ryb2tlPSIjRTNEMzZBIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxNDUuMCIgeT0iMTE0LjAiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlBvcnRhaWwgZm91cm5pc3NldXJzPC90ZXh0Pjx0ZXh0IHg9IjE0NS4wIiB5PSIxMzguMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+TURNPC90ZXh0PjxyZWN0IHg9IjM2NSIgeT0iNzAiIHdpZHRoPSIyMTAiIGhlaWdodD0iOTYiIHJ4PSIxNCIgZmlsbD0iI0YxRUFGRCIgc3Ryb2tlPSIjN0M0REVCIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI0NzAuMCIgeT0iMTE0LjAiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlBMTTwvdGV4dD48dGV4dCB4PSI0NzAuMCIgeT0iMTM4LjAiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmNvbmNlcHRpb24gcHJvZHVpdDwvdGV4dD48cmVjdCB4PSI2OTAiIHk9IjcwIiB3aWR0aD0iMjEwIiBoZWlnaHQ9Ijk2IiByeD0iMTQiIGZpbGw9IiNGREY3Q0YiIHN0cm9rZT0iI0UzRDM2QSIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNzk1LjAiIHk9IjExNC4wIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5QSU08L3RleHQ+PHRleHQgeD0iNzk1LjAiIHk9IjEzOC4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5maWNoZXMgcHJvZHVpdHM8L3RleHQ+PHJlY3QgeD0iMTAxNSIgeT0iNzAiIHdpZHRoPSIyMTAiIGhlaWdodD0iOTYiIHJ4PSIxNCIgZmlsbD0iI0ZERjdDRiIgc3Ryb2tlPSIjRTNEMzZBIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxMTIwLjAiIHk9IjExNC4wIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5DYWlzc2U8L3RleHQ+PHRleHQgeD0iMTEyMC4wIiB5PSIxMzguMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+cG9pbnQgZGUgdmVudGU8L3RleHQ+PHJlY3QgeD0iMTM0MCIgeT0iNzAiIHdpZHRoPSIyMTAiIGhlaWdodD0iOTYiIHJ4PSIxNCIgZmlsbD0iI0ZERjdDRiIgc3Ryb2tlPSIjRTNEMzZBIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIxNDQ1LjAiIHk9IjExNC4wIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5DUk08L3RleHQ+PHRleHQgeD0iMTQ0NS4wIiB5PSIxMzguMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+cmVsYXRpb24gY2xpZW50PC90ZXh0PjxsaW5lIHgxPSIyNTQiIHkxPSIxMTguMCIgeDI9IjM1OSIgeTI9IjExOC4wIiBzdHJva2U9IiMxNzE4MWMiIHN0cm9rZS13aWR0aD0iMi40IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjx0ZXh0IHg9IjMwNi41IiB5PSIxMDYuMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+Y29tcG9zYW50czwvdGV4dD48bGluZSB4MT0iNTc5IiB5MT0iMTE4LjAiIHgyPSI2ODQiIHkyPSIxMTguMCIgc3Ryb2tlPSIjN0M0REVCIiBzdHJva2Utd2lkdGg9IjIuNCIgbWFya2VyLWVuZD0idXJsKCNhdikiLz48dGV4dCB4PSI2MzEuNSIgeT0iODkuMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdDNERFQiI+Y2FyYWN0w6lyaXN0aXF1ZXM8L3RleHQ+PHRleHQgeD0iNjMxLjUiIHk9IjEwNi4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN0M0REVCIj5kb250IGxlIENPMjwvdGV4dD48bGluZSB4MT0iOTA0IiB5MT0iMTE4LjAiIHgyPSIxMDA5IiB5Mj0iMTE4LjAiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyLjQiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHRleHQgeD0iOTU2LjUiIHk9IjEwNi4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5wcml4LCBmaWNoZXM8L3RleHQ+PGxpbmUgeDE9IjEyMjkiIHkxPSIxMTguMCIgeDI9IjEzMzQiIHkyPSIxMTguMCIgc3Ryb2tlPSIjMTcxODFjIiBzdHJva2Utd2lkdGg9IjIuNCIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48dGV4dCB4PSIxMjgxLjUiIHk9Ijg5LjAiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmFjaGF0czwvdGV4dD48dGV4dCB4PSIxMjgxLjUiIHk9IjEwNi4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5jbGllbnRzPC90ZXh0PjxyZWN0IHg9Ijc0MCIgeT0iMjcwIiB3aWR0aD0iMjEwIiBoZWlnaHQ9Ijk2IiByeD0iMTQiIGZpbGw9IiNGREY3Q0YiIHN0cm9rZT0iI0UzRDM2QSIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iODQ1LjAiIHk9IjMxNC4wIiBmb250LXNpemU9IjE5IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTcxODFjIj5FUlA8L3RleHQ+PHRleHQgeD0iODQ1LjAiIHk9IjMzOC4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5zdG9ja3MsIGNvbXB0YWJpbGl0w6k8L3RleHQ+PGxpbmUgeDE9IjQ5MC4wIiB5MT0iMTcwIiB4Mj0iNzM0IiB5Mj0iMzE4LjAiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyLjQiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHRleHQgeD0iNjIwLjAiIHk9IjIwNSIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+bm9tZW5jbGF0dXJlPC90ZXh0PjxsaW5lIHgxPSIxMTAwLjAiIHkxPSIxNzAiIHgyPSI5NTYiIHkyPSIzMTguMCIgc3Ryb2tlPSIjMTcxODFjIiBzdHJva2Utd2lkdGg9IjIuNCIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48dGV4dCB4PSIxMDEwLjAiIHk9IjIwNSIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+dmVudGVzPC90ZXh0PjxyZWN0IHg9IjQwIiB5PSI0NzAiIHdpZHRoPSIxNTEwIiBoZWlnaHQ9Ijk2IiByeD0iMTYiIGZpbGw9IiNFNkZDRjkiIHN0cm9rZT0iIzgyRjZFQiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNzk1IiB5PSI1MTQiIGZvbnQtc2l6ZT0iMjAiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPkRhdGFsYWtlPC90ZXh0Pjx0ZXh0IHg9Ijc5NSIgeT0iNTQwIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj51bmUgY29waWUgZGUgY2hhcXVlIGFwcGxpY2F0aW9uLCBwb3VyIGzigJlhbmFseXNlPC90ZXh0PjxsaW5lIHgxPSIxNDUuMCIgeTE9IjE3MCIgeDI9IjE0NS4wIiB5Mj0iNDY0IiBzdHJva2U9IiM5REUzREMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxsaW5lIHgxPSI0NzAuMCIgeTE9IjE3MCIgeDI9IjQ3MC4wIiB5Mj0iNDY0IiBzdHJva2U9IiM5REUzREMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxsaW5lIHgxPSIxMTIwLjAiIHkxPSIxNzAiIHgyPSIxMTIwLjAiIHkyPSI0NjQiIHN0cm9rZT0iIzlERTNEQyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PGxpbmUgeDE9IjE0NDUuMCIgeTE9IjE3MCIgeDI9IjE0NDUuMCIgeTI9IjQ2NCIgc3Ryb2tlPSIjOURFM0RDIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48bGluZSB4MT0iODQ1LjAiIHkxPSIzNzAiIHgyPSI4NDUuMCIgeTI9IjQ2NCIgc3Ryb2tlPSIjOURFM0RDIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIgbWFya2VyLWVuZD0idXJsKCNhcikiLz48bGluZSB4MT0iNzEyIiB5MT0iMTcwIiB4Mj0iNzEyIiB5Mj0iNDY0IiBzdHJva2U9IiM5REUzREMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjx0ZXh0IHg9IjE0MzMuMCIgeT0iNDUyIiB0ZXh0LWFuY2hvcj0iZW5kIiBmb250LXNpemU9IjEzIiBmaWxsPSIjOGE4ZjljIj5jb3BpZSBjaGFxdWUgbnVpdDwvdGV4dD48dGV4dCB4PSI0MCIgeT0iNjEwIiBmb250LXNpemU9IjE0IiBmaWxsPSIjN0M0REVCIiBmb250LXdlaWdodD0iNjAwIj7igJQgbGUgY2hlbWluIGRlIGzigJlpbXBhY3QgQ08yPC90ZXh0Pjx0ZXh0IHg9IjMzMCIgeT0iNjEwIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOGE4ZjljIj4tIC0gLSBjb3BpZSB2ZXJzIGxlIGRhdGFsYWtlPC90ZXh0Pjwvc3ZnPg==" alt="Carte des applications : le portail fournisseurs envoie les composants au PLM ; le PLM envoie les caractéristiques produit, dont l'impact CO2, au PIM et la nomenclature à l'ERP ; le PIM envoie prix et fiches à la caisse ; la caisse envoie les ventes à l'ERP et les achats clients au CRM ; chaque application est copiée chaque nuit dans le datalake."></div>
+    <p class="source"><b>Source :</b> Li Da Xu, <i>Enterprise Integration and Information Architecture</i>, 2014</p>
+  </div>
+</section>
+
+<section class="split catal" data-tone="b">
+  <div class="wrap">
+    <div>
+      <p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+      <div class="kicker">2.4 — Trouver · le catalogue</div>
+      <h2>Le catalogue : l'annuaire des données</h2>
+      <p class="lead">On tape un mot, on trouve la donnée, sa définition, son responsable et sa source.</p>
+      <div class="example"><span class="tag">Outils du marché</span><p>Collibra, Alation, DataHub, Unity Catalog.</p></div>
+      <p class="source"><b>Source :</b> DAMA International, <i>DAMA-DMBOK</i>, 2e édition, 2017, chapitre « Metadata Management »</p>
+    </div>
+    <div class="catalog" role="group" aria-label="Exemple fictif de fiche dans un catalogue de données">
+      <div class="cat-search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>co2</span></div>
+      <p class="cat-count">1 résultat · exemple fictif</p>
+      <div class="cat-item">
+        <div class="cat-top"><span class="cat-type">Indicateur</span><span class="cat-badge">Validé par le data owner</span></div>
+        <h3>Product CO2 impact</h3>
+        <p class="cat-desc">Émissions de CO2 d'un produit sur son cycle de vie, en kg CO2e par unité.</p>
+        <dl class="cat-meta">
+          <div><dt>Domaine</dt><dd>Produit</dd></div>
+          <div><dt>Producteur</dt><dd>Équipe data Produit</dd></div>
+          <div><dt>Data owner</dt><dd>Responsable données Produit</dd></div>
+          <div><dt>Lignage</dt><dd>PLM → datalake → indicateur</dd></div>
+          <div><dt>Mise à jour</dt><dd>À chaque version de recette</dd></div>
+          <div><dt>Qualité</dt><dd>3 contrôles sur 3 réussis</dd></div>
+        </dl>
+        <div class="cat-tags"><span>RSE</span><span>CO2</span><span>Produit</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dense widefig" data-tone="c">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">2.5 — Trouver · le lignage</div>
+    <h2>Le lignage : le chemin d'une donnée</h2>
+    <p class="lead">Il relie la source, chaque transformation et chaque usage. Il sert à savoir ce qui casse quand quelque chose change.</p>
+    <div class="visual fit wide"><img class="zoomable" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjU2MCIgdmlld0JveD0iMCAwIDE1MDAgNTYwIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkxpZ25hZ2UgZGUgbCdpbmRpY2F0ZXVyIFByb2R1Y3QgQ08yIGltcGFjdCwgcHJvZHVpdCBwYXIgbCfDqXF1aXBlIGRhdGEgZHUgZG9tYWluZSBQcm9kdWl0IDogbCdpbXBhY3QgQ08yIHNhaXNpIGRhbnMgbGUgUExNIGVzdCBjb3Bpw6kgY2hhcXVlIG51aXQgZGFucyBsZSBkYXRhbGFrZSwgbmV0dG95w6kgZXQgY29udmVydGkgZW4ga2cgQ08yZSBkYW5zIGxhIHRhYmxlIGNvMl9wYXJfcHJvZHVpdCwgcHVpcyBjYWxjdWzDqSBlbiBpbmRpY2F0ZXVyLCB1dGlsaXPDqSBwYXIgbGUgdGFibGVhdSBkZSBib3JkIFJTRSBldCBwYXIgbGEgZmljaGUgcHJvZHVpdCBlbiBtYWdhc2luLiI+PGRlZnM+PG1hcmtlciBpZD0iYXIiIHZpZXdCb3g9IjAgMCAxMCAxMCIgcmVmWD0iOSIgcmVmWT0iNSIgbWFya2VyV2lkdGg9IjciIG1hcmtlckhlaWdodD0iNyIgb3JpZW50PSJhdXRvIj48cGF0aCBkPSJNMCAwTDEwIDVMMCAxMHoiIGZpbGw9IiMxNzE4MWMiLz48L21hcmtlcj48bWFya2VyIGlkPSJhdiIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI5IiByZWZZPSI1IiBtYXJrZXJXaWR0aD0iNyIgbWFya2VySGVpZ2h0PSI3IiBvcmllbnQ9ImF1dG8iPjxwYXRoIGQ9Ik0wIDBMMTAgNUwwIDEweiIgZmlsbD0iIzdDNERFQiIvPjwvbWFya2VyPjwvZGVmcz48cmVjdCB3aWR0aD0iMTUwMCIgaGVpZ2h0PSI1NjAiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI0MCIgeT0iNjAiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIGxldHRlci1zcGFjaW5nPSIyLjIiIGZpbGw9IiM4YThmOWMiPlNPVVJDRTwvdGV4dD48dGV4dCB4PSIxNTAiIHk9IjEyOCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+c2Fpc2llIHBhciBsZSBkZXNpZ25lcjwvdGV4dD48cGF0aCBkPSJNMzcwIDEzNiBWMTE4IEgxMjUwIFYxMzYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdDNERFQiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHJlY3QgeD0iNTYwIiB5PSIxMDQiIHdpZHRoPSI1MDAiIGhlaWdodD0iMjYiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI4MTAiIHk9IjEyMiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdDNERFQiI+cHJvZHVpdCBwYXIgbOKAmcOpcXVpcGUgZGF0YSBkdSBkb21haW5lIFByb2R1aXQ8L3RleHQ+PHRleHQgeD0iMTMyMCIgeT0iNjAiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIGxldHRlci1zcGFjaW5nPSIyLjIiIGZpbGw9IiM4YThmOWMiPlVTQUdFUzwvdGV4dD48cmVjdCB4PSI0MCIgeT0iMTUwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjExMCIgcng9IjE0IiBmaWxsPSIjRkRGN0NGIiBzdHJva2U9IiNFM0QzNkEiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjE1MC4wIiB5PSIyMDEuMCIgZm9udC1zaXplPSIxOSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+UExNPC90ZXh0Pjx0ZXh0IHg9IjE1MC4wIiB5PSIyMjUuMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+Y29uY2VwdGlvbiBwcm9kdWl0PC90ZXh0PjxyZWN0IHg9IjM3MCIgeT0iMTUwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjExMCIgcng9IjE0IiBmaWxsPSIjRTZGQ0Y5IiBzdHJva2U9IiM4MkY2RUIiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjQ4MC4wIiB5PSIyMDEuMCIgZm9udC1zaXplPSIxOSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+RGF0YWxha2U8L3RleHQ+PHRleHQgeD0iNDgwLjAiIHk9IjIyNS4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5jb3BpZSBicnV0ZTwvdGV4dD48cmVjdCB4PSI3MDAiIHk9IjE1MCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIxMTAiIHJ4PSIxNCIgZmlsbD0iI0U2RkNGOSIgc3Ryb2tlPSIjODJGNkVCIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI4MTAuMCIgeT0iMjAxLjAiIGZvbnQtc2l6ZT0iMTkiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxNzE4MWMiPlRhYmxlIG5ldHRvecOpZTwvdGV4dD48dGV4dCB4PSI4MTAuMCIgeT0iMjI1LjAiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmNvMl9wYXJfcHJvZHVpdDwvdGV4dD48cmVjdCB4PSIxMDMwIiB5PSIxNTAiIHdpZHRoPSIyMjAiIGhlaWdodD0iMTEwIiByeD0iMTQiIGZpbGw9IiNGMUVBRkQiIHN0cm9rZT0iIzdDNERFQiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHRleHQgeD0iMTE0MC4wIiB5PSIyMDEuMCIgZm9udC1zaXplPSIxOSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+SW5kaWNhdGV1cjwvdGV4dD48dGV4dCB4PSIxMTQwLjAiIHk9IjIyNS4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5Qcm9kdWN0IENPMiBpbXBhY3Q8L3RleHQ+PGxpbmUgeDE9IjI2NCIgeTE9IjIwNS4wIiB4Mj0iMzY0IiB5Mj0iMjA1LjAiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyLjQiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHRleHQgeD0iMzE0LjAiIHk9IjE3NC4wIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNGI0ZjVhIj5jb3BpZTwvdGV4dD48dGV4dCB4PSIzMTQuMCIgeT0iMTkxLjAiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmNoYXF1ZSBudWl0PC90ZXh0PjxsaW5lIHgxPSI1OTQiIHkxPSIyMDUuMCIgeDI9IjY5NCIgeTI9IjIwNS4wIiBzdHJva2U9IiMxNzE4MWMiIHN0cm9rZS13aWR0aD0iMi40IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjx0ZXh0IHg9IjY0NC4wIiB5PSIxNzQuMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+bmV0dG95YWdlLDwvdGV4dD48dGV4dCB4PSI2NDQuMCIgeT0iMTkxLjAiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YjRmNWEiPmVuIGtnIENPMmU8L3RleHQ+PGxpbmUgeDE9IjkyNCIgeTE9IjIwNS4wIiB4Mj0iMTAyNCIgeTI9IjIwNS4wIiBzdHJva2U9IiMxNzE4MWMiIHN0cm9rZS13aWR0aD0iMi40IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjx0ZXh0IHg9Ijk3NC4wIiB5PSIxOTEuMCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzRiNGY1YSI+Y2FsY3VsPC90ZXh0PjxyZWN0IHg9IjEzMjAiIHk9IjgwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjkwIiByeD0iMTQiIGZpbGw9IiNGQ0VBRkMiIHN0cm9rZT0iI0UwNTZFNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iMTQwMC4wIiB5PSIxMzIuMCIgZm9udC1zaXplPSIxOSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+VGFibGVhdSBSU0U8L3RleHQ+PHJlY3QgeD0iMTMyMCIgeT0iMjQwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjkwIiByeD0iMTQiIGZpbGw9IiNGQ0VBRkMiIHN0cm9rZT0iI0UwNTZFNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iMTQwMC4wIiB5PSIyOTIuMCIgZm9udC1zaXplPSIxOSIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3MTgxYyI+RmljaGUgbWFnYXNpbjwvdGV4dD48cGF0aCBkPSJNMTI1NCAyMDUuMCBIMTI4NSBWMTI1IEgxMzE0IiBmaWxsPSJub25lIiBzdHJva2U9IiMxNzE4MWMiIHN0cm9rZS13aWR0aD0iMi40IiBtYXJrZXItZW5kPSJ1cmwoI2FyKSIvPjxwYXRoIGQ9Ik0xMjg1IDIwNS4wIFYyODUgSDEzMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzE3MTgxYyIgc3Ryb2tlLXdpZHRoPSIyLjQiIG1hcmtlci1lbmQ9InVybCgjYXIpIi8+PHJlY3QgeD0iNDAiIHk9IjM4MCIgd2lkdGg9IjE0NDAiIGhlaWdodD0iMTQwIiByeD0iMTYiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzdDNERFQiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI3IDYiLz48dGV4dCB4PSI3MCIgeT0iNDI4IiBmb250LXNpemU9IjE1IiBmb250LXdlaWdodD0iNjAwIiBsZXR0ZXItc3BhY2luZz0iMiIgZmlsbD0iIzdDNERFQiI+RVQgU0kgTEEgU09VUkNFIENIQU5HRSA/PC90ZXh0Pjx0ZXh0IHg9IjcwIiB5PSI0NjQiIGZvbnQtc2l6ZT0iMTkiIGZpbGw9IiMxNzE4MWMiPkxlIFBMTSBwYXNzZSBkdSBraWxvIGF1IGdyYW1tZS4gRW4gcmVtb250YW50IGxlIGxpZ25hZ2UsIG9uIHNhaXQgcXXigJlpbCBmYXV0IGFkYXB0ZXIgbGUgbmV0dG95YWdlLDwvdGV4dD48dGV4dCB4PSI3MCIgeT0iNDkyIiBmb250LXNpemU9IjE5IiBmaWxsPSIjMTcxODFjIj5ldCBxdWUgZGV1eCB1c2FnZXMgc29udCB0b3VjaMOpcyA6IGxlIHRhYmxlYXUgUlNFIGV0IGxhIGZpY2hlIG1hZ2FzaW4uPC90ZXh0Pjwvc3ZnPg==" alt="Lignage de Product CO2 impact : PLM, copié chaque nuit dans le datalake, nettoyé et converti en kg CO2e dans la table co2_par_produit, calculé en indicateur, puis utilisé par le tableau RSE et la fiche magasin. Si le PLM passe du kilo au gramme, le lignage montre qu'il faut adapter le nettoyage et que deux usages sont touchés."></div>
+    <p class="source"><b>Source :</b> DAMA International, <i>DAMA-DMBOK</i>, 2e édition, 2017</p>
+  </div>
+</section>
+
+<section class="cols fourcols dense dark" data-tone="a">
+  <svg class="watermark-local" aria-hidden="true"><rect width="100%" height="100%" fill="url(#wm-dark)"/></svg><div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+    <div class="kicker">2.6 — Trouver · le responsable</div>
+    <h2>Chaque donnée a un responsable</h2>
+    <div class="grid"><div class="card"><h3>Data owner</h3><p>Fixe les règles : définition, accès, qualité attendue.</p></div><div class="card"><h3>Data steward</h3><p>Fait respecter les règles et répond aux questions.</p></div><div class="card"><h3>Producteur</h3><p>L'équipe qui fabrique la donnée utilisée. Elle corrige à la source.</p></div><div class="card"><h3>Utilisateur</h3><p>Utilise la donnée et signale les erreurs.</p></div></div>
+    <p class="takeaway sm">Une erreur corrigée dans un fichier, sans prévenir la source, revient au prochain chargement.</p>
+    <p class="source"><b>Source :</b> DAMA International, <i>DAMA-DMBOK</i>, 2e édition, 2017, chapitre « Data Governance »</p>
+  </div>
+</section>
+
+<section class="split livrable" data-tone="b">
+  <div class="wrap">
+    <div>
+      <p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span class="on">2 · Trouver</span><span>3 · Vérifier</span></p>
+      <div class="kicker">Point d'étape · Trouver</div>
+      <h2>On sait d'où vient la donnée, et qui la produit</h2>
+    </div>
+    <div class="fiche" role="group" aria-label="Fiche · Product CO2 impact"><p class="fiche-t">Fiche · Product CO2 impact</p><dl><dt>Nom<small>Comprendre</small></dt><dd>Product CO2 impact</dd><dt>Définition<small>Comprendre</small></dt><dd>Les émissions de CO2 d'un produit sur son cycle de vie, en kg CO2e par unité.</dd><dt>Pour qui<small>Comprendre</small></dt><dd>La RSE pour réduire l'empreinte, le designer pour choisir les matériaux, le vendeur pour conseiller le client.</dd><dt class="new">Lignage<small>Trouver</small></dt><dd class="new">PLM → datalake → table nettoyée → indicateur.</dd><dt class="new">Producteur<small>Trouver</small></dt><dd class="new">L'équipe data du domaine Produit, sur le datalake.</dd><dt>Contrôles<small>Vérifier</small></dt><dd class="todo">Les règles vérifiées à chaque étape.</dd><dt>Mise à jour<small>Vérifier</small></dt><dd class="todo">À quelle fréquence le chiffre change.</dd></dl></div>
+  </div>
+</section>
+
+<section class="cols dense" data-tone="c">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span class="on">3 · Vérifier</span></p>
+    <div class="kicker">3 — Vérifier · le problème</div>
+    <h2>Un chiffre affiché, trois doutes</h2>
+    <p class="lead">Le tableau RSE affiche l'impact CO2 de chaque produit. Peut-on s'y fier ?</p>
+    <div class="grid"><div class="card"><h3>Des trous</h3><p class="said">« 800 produits sur 1 200 ont une valeur. »</p></div><div class="card"><h3>Une valeur absurde</h3><p class="said">« Une paire de chaussures : 800 kg CO2e. »</p></div><div class="card"><h3>Une date ancienne</h3><p class="said">« Dernière mise à jour il y a 18 mois. »</p></div></div>
+    <p class="takeaway sm">Un chiffre affiché n'est pas un chiffre fiable. Il faut des critères pour le vérifier.</p>
+    
+  </div>
+</section>
+
+<section class="cols dense sixcols" data-tone="a">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span class="on">3 · Vérifier</span></p>
+    <div class="kicker">3.1 — Vérifier · la qualité</div>
+    <h2>Une donnée de qualité est une donnée qu'on peut utiliser</h2>
+    <p class="lead">On la mesure avec six critères.</p>
+    <div class="grid"><div class="card"><h3>Exactitude</h3><p>Elle décrit bien la réalité.</p></div><div class="card"><h3>Complétude</h3><p>Il ne manque rien.</p></div><div class="card"><h3>Validité</h3><p>Elle a le bon format.</p></div><div class="card"><h3>Cohérence</h3><p>Elle est identique d'un système à l'autre.</p></div><div class="card"><h3>Unicité</h3><p>Chaque élément n'apparaît qu'une fois.</p></div><div class="card"><h3>Fraîcheur</h3><p>Elle est à jour quand on en a besoin.</p></div></div>
+    <p class="source"><b>Source :</b> DAMA UK Working Group, <i>The Six Primary Dimensions for Data Quality Assessment</i>, 2013</p>
+  </div>
+</section>
+
+<section class="dense stages" data-tone="b">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span class="on">3 · Vérifier</span></p>
+    <div class="kicker">3.2 — Vérifier · à chaque étape</div>
+    <h2>On vérifie à la source, à l'agrégation et à l'indicateur</h2>
+    <p class="lead">Une erreur se corrige là où elle naît. Chaque étape du lignage a ses propres contrôles.</p>
+    <div class="stage-row">
+      <div class="stage"><span class="gk-n">1</span><h3>À la source</h3><p class="st-where">Le designer</p><p>Chaque produit a-t-il son impact ?</p><p class="st-crit">Complétude · Validité</p></div>
+      <div class="stage-arrow" aria-hidden="true">→</div>
+      <div class="stage"><span class="gk-n">2</span><h3>À l'agrégation</h3><p class="st-where">La collection</p><p>Tous les produits sont-ils comptés, une seule fois ?</p><p class="st-crit">Unicité · Cohérence</p></div>
+      <div class="stage-arrow" aria-hidden="true">→</div>
+      <div class="stage"><span class="gk-n">3</span><h3>À l'indicateur</h3><p class="st-where">Le rapport RSE</p><p>Le chiffre est-il juste et à jour ?</p><p class="st-crit">Exactitude · Fraîcheur</p></div>
+    </div>
+    <p class="source"><b>Source :</b> DAMA UK Working Group, <i>The Six Primary Dimensions for Data Quality Assessment</i>, 2013</p>
+  </div>
+</section>
+
+<section class="dense" data-tone="c">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span class="on">3 · Vérifier</span></p>
+    <div class="kicker">3.3 — Vérifier · le format</div>
+    <h2>Écrire une règle comme une phrase métier</h2>
+    <p class="lead">Une règle de qualité doit être comprise par tout le monde, pas seulement par l'équipe data.</p>
+    <div class="gk-howto big">
+      <p class="gk-howto-t">Le format</p>
+      <dl>
+        <div><dt>Étant donné</dt><dd>le contexte de départ</dd></div>
+        <div><dt>Quand</dt><dd>ce qui se passe</dd></div>
+        <div><dt>Alors</dt><dd>le résultat attendu</dd></div>
+        <div><dt>Et</dt><dd>une condition de plus</dd></div>
+      </dl>
+    </div>
+    <p class="source"><b>Source :</b> <a href="https://cucumber.io/docs/gherkin/reference/" target="_blank" rel="noopener">Cucumber, Gherkin Reference</a></p>
+  </div>
+</section>
+
+<section class="dense gherkin" data-tone="a">
+  <div class="wrap">
+<p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span class="on">3 · Vérifier</span></p>
+    <div class="kicker">3.4 — Vérifier · correction</div>
+    <h2>Trois règles métier pour l'impact CO2</h2>
+    <div class="gk-grid"><div class="gk"><div class="gk-head"><span class="gk-n">1</span><div><p class="gk-stage">À la source</p><p class="gk-where">Le designer crée le produit</p></div></div><div class="gk-body"><p><b>Étant donné</b> un nouveau produit prêt à être lancé</p><p><b>Quand</b> le designer valide sa recette</p><p><b>Alors</b> son impact CO2 est connu</p><p><b>Et</b> il est exprimé en kg CO2e par produit</p></div><p class="gk-crit">Complétude · Validité</p></div><div class="gk"><div class="gk-head"><span class="gk-n">2</span><div><p class="gk-stage">À l'agrégation</p><p class="gk-where">On additionne toute la collection</p></div></div><div class="gk-body"><p><b>Étant donné</b> la collection printemps-été</p><p><b>Quand</b> on calcule l'impact total de la collection</p><p><b>Alors</b> chaque produit est compté une seule fois</p><p><b>Et</b> tous les produits vendus en magasin sont dans le total</p></div><p class="gk-crit">Unicité · Cohérence</p></div><div class="gk"><div class="gk-head"><span class="gk-n">3</span><div><p class="gk-stage">À l'indicateur</p><p class="gk-where">La RSE présente le chiffre</p></div></div><div class="gk-body"><p><b>Étant donné</b> le rapport RSE présenté à la direction</p><p><b>Quand</b> un designer change un matériau</p><p><b>Alors</b> le nouvel impact apparaît dans le rapport du mois</p><p><b>Et</b> l'expert RSE retrouve le même chiffre en refaisant le calcul</p></div><p class="gk-crit">Exactitude · Fraîcheur</p></div></div>
+  </div>
+</section>
+
+<section class="split livrable dark" data-tone="b">
+  <svg class="watermark-local" aria-hidden="true"><rect width="100%" height="100%" fill="url(#wm-dark)"/></svg><div class="wrap">
+    <div>
+      <p class="fil"><span>0 · Entreprise</span><span>1 · Comprendre</span><span>2 · Trouver</span><span class="on">3 · Vérifier</span></p>
+      <div class="kicker">Point d'étape · Vérifier</div>
+      <h2>La fiche est complète</h2>
+    </div>
+    <div class="fiche" role="group" aria-label="Fiche · Product CO2 impact"><p class="fiche-t">Fiche · Product CO2 impact</p><dl><dt>Nom<small>Comprendre</small></dt><dd>Product CO2 impact</dd><dt>Définition<small>Comprendre</small></dt><dd>Les émissions de CO2 d'un produit sur son cycle de vie, en kg CO2e par unité.</dd><dt>Pour qui<small>Comprendre</small></dt><dd>La RSE pour réduire l'empreinte, le designer pour choisir les matériaux, le vendeur pour conseiller le client.</dd><dt>Lignage<small>Trouver</small></dt><dd>PLM → datalake → table nettoyée → indicateur.</dd><dt>Producteur<small>Trouver</small></dt><dd>L'équipe data du domaine Produit, sur le datalake.</dd><dt class="new">Contrôles<small>Vérifier</small></dt><dd class="new">Chaque produit a son impact, en kg CO2e. Chaque produit compté une fois. Rapport à jour chaque mois.</dd><dt class="new">Mise à jour<small>Vérifier</small></dt><dd class="new">À chaque nouvelle version de la recette du produit.</dd></dl></div>
+  </div>
+</section>
+
+<section class="cols dense wideh" data-tone="c">
+  <div class="wrap">
+    <div class="kicker">À vous</div>
+    <h2>À vous : la fiche de « Net Sales »</h2>
+    <p class="lead">Même méthode, un autre indicateur : la carte rose « Net Sales ».</p>
+    <div class="grid"><div class="card"><div class="num">1</div><h3>Comprendre</h3><p>Nom, définition, pour qui. La finance et le magasin comptent-ils les mêmes ventes ?</p></div><div class="card"><div class="num">2</div><h3>Trouver</h3><p>Quel lignage ? Quel producteur ?</p></div><div class="card"><div class="num">3</div><h3>Vérifier</h3><p>Trois critères, un contrôle chacun. Quelle fréquence de mise à jour ?</p></div></div>
+  </div>
+</section>
+
+<section class="cols" data-tone="a">
+  <div class="wrap">
+    <div class="kicker">Récapitulatif</div>
+    <h2>Une méthode pour chaque question</h2>
+    <div class="grid"><div class="card"><div class="num">1</div><h3>Comprendre</h3><p>Langage commun, métamodèle.</p></div><div class="card"><div class="num">2</div><h3>Trouver</h3><p>Architecture, processus, applications, catalogue, lignage, responsable.</p></div><div class="card"><div class="num">3</div><h3>Vérifier</h3><p>Six critères, contrôlés à la source, à l'agrégation et à l'indicateur.</p></div></div>
+  </div>
+</section>
+
+<section class="glossaire dense" data-tone="b">
+  <div class="wrap">
+    <div class="kicker">Glossaire</div>
+    <h2>Les mots du cours</h2>
+    <dl class="gloss">
+      <div><dt>ERP</dt><dd>Logiciel de gestion : achats, stocks, production, comptabilité.</dd></div>
+      <div><dt>PLM</dt><dd>Logiciel qui suit un produit de sa conception à sa fin de vie.</dd></div>
+      <div><dt>PIM</dt><dd>Logiciel qui centralise les fiches produits : descriptions, caractéristiques.</dd></div>
+      <div><dt>CRM</dt><dd>Logiciel de gestion de la relation client.</dd></div>
+      <div><dt>MDM</dt><dd>Gestion des données de référence : une seule version des clients, produits, fournisseurs.</dd></div>
+      <div><dt>Point de vente</dt><dd>La caisse, qui enregistre chaque achat en magasin.</dd></div>
+      <div><dt>Datalake</dt><dd>Grand espace de stockage où l'on rassemble les données de toutes les applications.</dd></div>
+      <div><dt>Catalogue de données</dt><dd>Inventaire des données, avec leur description et leur responsable.</dd></div>
+      <div><dt>Lignage</dt><dd>Le chemin d'une donnée, de sa source jusqu'à son usage.</dd></div>
+      <div><dt>Data owner</dt><dd>Responsable d'une donnée : il en fixe les règles.</dd></div>
+      <div><dt>Data steward</dt><dd>Fait respecter les règles d'une donnée au quotidien.</dd></div>
+      <div><dt>Indicateur</dt><dd>Un chiffre suivi dans le temps pour prendre une décision.</dd></div>
+      <div><dt>Métamodèle</dt><dd>Les cases dans lesquelles on range ce que fait l'entreprise.</dd></div>
+      <div><dt>Ubiquitous language</dt><dd>Un vocabulaire partagé par tous, sans ambiguïté.</dd></div>
+    </dl>
+    <p class="source"><b>Source :</b> DAMA International, <i>DAMA-DMBOK</i>, 2e édition, 2017</p>
+  </div>
+</section>
+
+<section class="biblio dense" data-tone="c">
+  <div class="wrap">
+    <div class="kicker">Pour aller plus loin</div>
+    <h2>Lire et suivre</h2>
+    <div class="cda-box"><p class="cda-t">Clean Data Architecture</p><p class="cda-d">La newsletter de Gaëlle Seret sur la donnée, l'architecture et les organisations qui la font vivre.</p><a class="link" href="https://cleandataarchitecture.substack.com/" target="_blank" rel="noopener">cleandataarchitecture.substack.com</a></div>
+    <div class="bk-grid"><div class="bk-col"><h3>Architecture</h3><ul><li><p class="bk-t"><i>Designing Data-Intensive Applications</i></p><p class="bk-a">Martin Kleppmann · O'Reilly, 2017</p><p class="bk-w">Comment les systèmes stockent, déplacent et transforment les données.</p></li><li><p class="bk-t"><i>Fundamentals of Data Engineering</i></p><p class="bk-a">Joe Reis, Matt Housley · O'Reilly, 2022</p><p class="bk-w">Le cycle de vie de la donnée, de la source à l'usage.</p></li></ul></div><div class="bk-col"><h3>Organisation</h3><ul><li><p class="bk-t"><i>Team Topologies</i></p><p class="bk-a">Matthew Skelton, Manuel Pais · IT Revolution, 2019</p><p class="bk-w">Comment découper les équipes pour qu'elles travaillent bien ensemble.</p></li><li><p class="bk-t"><i>Data Mesh</i></p><p class="bk-a">Zhamak Dehghani · O'Reilly, 2022</p><p class="bk-w">Confier les données aux domaines métier qui les produisent.</p></li></ul></div><div class="bk-col"><h3>Domain-Driven Design</h3><ul><li><p class="bk-t"><i>Learning Domain-Driven Design</i></p><p class="bk-a">Vlad Khononov · O'Reilly, 2021</p><p class="bk-w">Domaines, langage commun et contextes, expliqués simplement.</p></li><li><p class="bk-t"><i><a href="https://martinfowler.com/bliki/BoundedContext.html" target="_blank" rel="noopener">Bliki : Ubiquitous Language, Bounded Context</a></i></p><p class="bk-a">Martin Fowler · articles en ligne, gratuits</p><p class="bk-w">Deux notions clés du cours en quelques minutes de lecture.</p></li></ul></div><div class="bk-col"><h3>Produit</h3><ul><li><p class="bk-t"><i>Inspired</i></p><p class="bk-a">Marty Cagan · Wiley, 2e édition, 2017</p><p class="bk-w">Construire un produit utile à partir des vrais besoins.</p></li><li><p class="bk-t"><i>Continuous Discovery Habits</i></p><p class="bk-a">Teresa Torres · Product Talk, 2021</p><p class="bk-w">Parler à ses utilisateurs chaque semaine pour décider quoi construire.</p></li></ul></div></div>
+  </div>
+</section>
+
+<section class="closing" data-tone="a">
+  <div class="wrap">
+    <div class="kicker">Pour finir</div>
+    <h2>Un indicateur est fiable quand tout le monde parle de la même chose</h2>
+    <p class="lead">Avant de calculer, demandez-vous : où est la donnée, que veut-elle dire, et peut-on s'y fier ?</p>
+    <div class="cta-row"><a class="btn sm" href="https://cleandataarchitecture.substack.com/" target="_blank" rel="noopener">Go to the newsletter →</a><a class="link" href="https://cleandataarchitecture.substack.com/" target="_blank" rel="noopener">cleandataarchitecture.substack.com</a></div>
+    <div class="foot"><i></i><i></i><i></i><span>Domain · Platform · Governance</span></div>
+  </div>
+</section>
+</main>
+
+<div class="tm" aria-hidden="true"><b>© Clean Data Architecture</b><span>Gaëlle Seret · cleandataarchitecture.substack.com · do not copy or share without permission</span></div>
+
+<div class="lightbox" role="dialog" aria-label="Enlarged figure"><img alt="" draggable="false"><div class="lb-bar"><button type="button" data-a="out" aria-label="Zoom out">−</button><button type="button" data-a="in" aria-label="Zoom in">+</button><button type="button" data-a="fit" aria-label="Fit to screen">Fit</button><button type="button" data-a="close" aria-label="Close">×</button></div><div class="lb-hint">Drag or scroll to move · pinch, double-click or + / − to zoom · Esc to close</div></div>
+
+<script>
+  (function () {
+    var svg = document.querySelector('.watermark');
+    var pat = document.getElementById('wm');
+    var a = pat.querySelector('.a'), b = pat.querySelector('.b');
+    var patDark = document.getElementById('wm-dark');
+    var da = patDark.querySelector('.da'), db = patDark.querySelector('.db');
+    function build() {
+      var w = window.innerWidth;
+      var fs = w < 600 ? 11 : w < 1400 ? 15 : 20;
+      var ls = fs * 0.22;
+      [a, b, da, db].forEach(function (t) { t.style.fontSize = fs + 'px'; t.style.letterSpacing = ls + 'px'; });
+      var m = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      m.textContent = a.textContent;
+      m.style.fontSize = fs + 'px'; m.style.letterSpacing = ls + 'px';
+      m.style.fontFamily = getComputedStyle(a).fontFamily; m.style.fontWeight = 500; m.style.textTransform = 'uppercase';
+      m.setAttribute('visibility', 'hidden');
+      svg.appendChild(m);
+      var tw = m.getComputedTextLength();
+      svg.removeChild(m);
+      if (!tw) return;
+      var tileW = Math.round(tw * 2.4), tileH = Math.round(fs * 8);
+      [pat, patDark].forEach(function (p) { p.setAttribute('width', tileW); p.setAttribute('height', tileH); });
+      a.setAttribute('x', 0); a.setAttribute('y', Math.round(tileH * 0.3));
+      b.setAttribute('x', Math.round(tileW / 2)); b.setAttribute('y', Math.round(tileH * 0.8));
+      da.setAttribute('x', 0); da.setAttribute('y', Math.round(tileH * 0.3));
+      db.setAttribute('x', Math.round(tileW / 2)); db.setAttribute('y', Math.round(tileH * 0.8));
+    }
+    build();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+    var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(build, 150); });
+  })();
+  var secs = document.querySelectorAll('main section');
+  var nav = document.querySelector('nav.dots');
+  secs.forEach(function (s, i) {
+    s.id = s.id || 's' + (i + 1);
+    var a = document.createElement('a');
+    a.href = '#' + s.id; a.setAttribute('aria-label', 'Section ' + (i + 1));
+    nav.appendChild(a);
+  });
+  var dots = nav.querySelectorAll('a');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) {
+          var i = Array.prototype.indexOf.call(secs, e.target);
+          dots.forEach(function (d, j) { d.classList.toggle('on', i === j); });
+        }
+      });
+    }, { threshold: 0.55 });
+    secs.forEach(function (s) { io.observe(s); });
+  }
+  // Visionneuse de schémas : clic pour ouvrir, puis zoom et déplacement dans l'image
+  (function () {
+    var lb = document.querySelector('.lightbox'); if (!lb) return;
+    var big = lb.querySelector('img');
+    var nw = 0, nh = 0, s = 1, tx = 0, ty = 0, fitS = 1, open = false;
+    var pts = {}, moved = false, pinch = null, lastTap = 0;
+    function vw() { return lb.clientWidth; } function vh() { return lb.clientHeight; }
+    function clamp() {
+      var w = nw * s, h = nh * s, m = 16;
+      tx = w <= vw() - 2 * m ? (vw() - w) / 2 : Math.min(m, Math.max(vw() - w - m, tx));
+      ty = h <= vh() - 2 * m ? (vh() - h) / 2 : Math.min(m, Math.max(vh() - h - m, ty));
+    }
+    function draw() { clamp(); big.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')'; }
+    function fit() { fitS = Math.min((vw() - 32) / nw, (vh() - 32) / nh); s = fitS; tx = 0; ty = 0; draw(); }
+    function zoomAt(k, cx, cy) {
+      var ns = Math.min(Math.max(s * k, fitS * 0.6), Math.max(fitS * 8, 3));
+      tx = cx - (cx - tx) * (ns / s); ty = cy - (cy - ty) * (ns / s); s = ns; draw();
+    }
+    function show(im) {
+      nw = im.naturalWidth; nh = im.naturalHeight; if (!nw) return;
+      big.src = im.src; big.alt = im.alt; big.style.width = nw + 'px'; big.style.height = nh + 'px';
+      lb.classList.add('on'); open = true; document.documentElement.style.overflow = 'hidden'; fit();
+    }
+    function hide() { lb.classList.remove('on', 'drag'); open = false; pts = {}; pinch = null; document.documentElement.style.overflow = ''; }
+    document.querySelectorAll('img.zoomable').forEach(function (im) { im.addEventListener('click', function () { show(im); }); });
+    lb.querySelector('.lb-bar').addEventListener('click', function (e) {
+      var a = e.target.getAttribute && e.target.getAttribute('data-a'); if (!a) return;
+      if (a === 'close') hide(); else if (a === 'fit') fit(); else zoomAt(a === 'in' ? 1.4 : 1 / 1.4, vw() / 2, vh() / 2);
+    });
+    lb.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) zoomAt(Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY);
+      else { tx -= e.deltaX; ty -= e.deltaY; draw(); }
+    }, { passive: false });
+    function n() { return Object.keys(pts).length; }
+    lb.addEventListener('pointerdown', function (e) {
+      if (e.target.closest && e.target.closest('.lb-bar')) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY, onImg: e.target === big }; moved = false;
+      try { lb.setPointerCapture(e.pointerId); } catch (err) {}
+      if (n() === 2) { var k = Object.keys(pts), a = pts[k[0]], b = pts[k[1]]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1 }; }
+      lb.classList.add('drag');
+    });
+    lb.addEventListener('pointermove', function (e) {
+      var p = pts[e.pointerId]; if (!p) return;
+      var dx = e.clientX - p.x, dy = e.clientY - p.y;
+      if (n() === 1) { if (Math.abs(dx) + Math.abs(dy) > 3) moved = true; if (moved) { tx += dx; ty += dy; p.x = e.clientX; p.y = e.clientY; draw(); } }
+      else if (n() === 2 && pinch) {
+        p.x = e.clientX; p.y = e.clientY; moved = true;
+        var k = Object.keys(pts), a = pts[k[0]], b = pts[k[1]], d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+        zoomAt(d / pinch.d, (a.x + b.x) / 2, (a.y + b.y) / 2); pinch.d = d;
+      }
+    });
+    function up(e) {
+      var p = pts[e.pointerId]; if (!p) return; delete pts[e.pointerId]; pinch = null;
+      if (n() === 0) {
+        lb.classList.remove('drag');
+        if (!moved) {
+          var now = Date.now();
+          if (!p.onImg) hide();                                  // clic sur le fond : fermer
+          else if (now - lastTap < 320) { if (s > fitS * 1.05) fit(); else zoomAt(2.2, e.clientX, e.clientY); lastTap = 0; }
+          else lastTap = now;                                    // double-clic sur l'image : zoom / retour
+        }
+      }
+    }
+    lb.addEventListener('pointerup', up); lb.addEventListener('pointercancel', up);
+    document.addEventListener('keydown', function (e) {
+      if (!open) return;
+      var k = e.key, st = 80;
+      if (k === 'Escape') hide();
+      else if (k === '+' || k === '=') zoomAt(1.4, vw() / 2, vh() / 2);
+      else if (k === '-' || k === '_') zoomAt(1 / 1.4, vw() / 2, vh() / 2);
+      else if (k === '0') fit();
+      else if (k === 'ArrowLeft') { tx += st; draw(); } else if (k === 'ArrowRight') { tx -= st; draw(); }
+      else if (k === 'ArrowUp') { ty += st; draw(); } else if (k === 'ArrowDown') { ty -= st; draw(); }
+      else return;
+      e.preventDefault();
+    });
+    window.addEventListener('resize', function () { if (open) fit(); });
+  })();
+  // Dissuasion de copie. Une page web ne peut pas empêcher une capture d'écran : elle peut seulement la marquer.
+  (function () {
+    var credit = '© Gaëlle Seret · Clean Data Architecture · https://cleandataarchitecture.substack.com/';
+    document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    ['copy', 'cut'].forEach(function (t) {
+      document.addEventListener(t, function (e) { e.preventDefault(); if (e.clipboardData) e.clipboardData.setData('text/plain', credit); });
+    });
+    var tm = document.querySelector('.tm'), timer;
+    function flash(ms) { tm.classList.add('on'); clearTimeout(timer); timer = setTimeout(function () { tm.classList.remove('on'); }, ms); }
+    // Raccourcis de capture : Cmd+Maj+3/4/5 (Mac), Win+Maj+S et Impr. écran (Windows)
+    document.addEventListener('keydown', function (e) { if ((e.metaKey && e.shiftKey) || e.key === 'PrintScreen') flash(4000); });
+    document.addEventListener('keyup', function (e) { if (e.key === 'PrintScreen') flash(4000); });
+    window.addEventListener('beforeprint', function () { tm.classList.add('on'); });
+    window.addEventListener('afterprint', function () { tm.classList.remove('on'); });
+  })();
+</script>
+</body>
+</html>
+
