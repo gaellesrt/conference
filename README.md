@@ -7,3 +7,7 @@ Data Mesh Belgium · 2026 — Gaëlle Seret & Axel Mercier
 - `visuals/` — Excalidraw sources (`.excalidraw`, editable on excalidraw.com) and PNG exports
 
 Newsletter: https://cleandataarchitecture.substack.com/
+
+## Autres supports
+
+- [`ifp-donnee-indicateur/`](ifp-donnee-indicateur/) — De la donnée à l'indicateur : gérer la transversalité · IFP School, Mastère Spécialisé, 2026
