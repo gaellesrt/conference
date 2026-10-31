@@ -457,6 +457,12 @@
   .gk-howto.big dl > div:first-child { border-top: 0; }
   .gk-howto.big dt { color: var(--turquoise); font-weight: 700; font-size: 1.15rem; }
   .gk-howto.big dd { font-size: 1.15rem; color: #f3f4f7; }
+  /* Titres plus discrets : plus de place pour le contenu */
+  h2 { font-size: clamp(1.4rem, 2.3vw, 2rem); }
+  h2::after { width: 2.6rem; height: .26rem; margin-top: .7rem; }
+  .kicker { margin-bottom: .8rem; padding: .3rem .9rem; font-size: .72rem; }
+  main section:not(.hero) > .wrap > h2 + .lead, .lead { margin-top: .9rem; }
+  h1 { font-size: clamp(2rem, 4.2vw, 3.6rem); }
 </style>
 </head>
 <body>
