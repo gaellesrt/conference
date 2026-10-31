@@ -1056,6 +1056,39 @@
     window.addEventListener('afterprint', function () { tm.classList.remove('on'); });
   })();
 </script>
+<script>
+/* Chaque section remplit l'écran : on agrandit son contenu (zoom) tant qu'il tient dans la hauteur disponible. */
+(function () {
+  var secs = Array.prototype.slice.call(document.querySelectorAll('main section'));
+  var MAX = 1.6, FILL = 0.9;
+  function reset() { secs.forEach(function (s) { s.style.zoom = ''; s.style.minHeight = ''; }); }
+  function fit() {
+    reset();
+    if (window.innerWidth < 900 || window.matchMedia('print').matches) return;
+    var bar = document.querySelector('.topbar');
+    var avail = window.innerHeight - (bar ? bar.offsetHeight : 0);
+    secs.forEach(function (s) {
+      if (s.classList.contains('widefig')) return;
+      s.style.minHeight = '0px';
+      var natural = s.getBoundingClientRect().height;
+      var z = Math.max(1, Math.min(MAX, avail * FILL / natural));
+      for (var i = 0; i < 12; i++) {
+        s.style.zoom = z; s.style.minHeight = (avail / z) + 'px';
+        if (s.getBoundingClientRect().height <= avail + 1 || z <= 1) break;
+        z = Math.max(1, z - 0.05);
+      }
+      if (z <= 1) { s.style.zoom = ''; s.style.minHeight = ''; }
+    });
+  }
+  window.__fit = fit; window.__fitReset = reset;
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 150); });
+  window.matchMedia('print').addEventListener('change', function (e) { e.matches ? reset() : fit(); });
+  window.addEventListener('beforeprint', reset); window.addEventListener('afterprint', fit);
+})();
+</script>
+
 </body>
 </html>
 
