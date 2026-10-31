@@ -1,13 +1,16 @@
-# Federation is an organisational principle, not an execution model
+# Conférences et cours — Clean Data Architecture
 
-Data Mesh Belgium · 2026 — Gaëlle Seret & Axel Mercier
+Supports de Gaëlle Seret, publiés avec GitHub Pages. Chaque support vit dans son propre dossier et s'ouvre directement dans un navigateur.
 
-- `index.html` — the deck (single self-contained file, open it in a browser)
-- `content.md` — slide-by-slide content
-- `visuals/` — Excalidraw sources (`.excalidraw`, editable on excalidraw.com) and PNG exports
+| Support | Contexte | Dossier |
+|---|---|---|
+| De la donnée à l'indicateur : gérer la transversalité | IFP School · Mastère Spécialisé · 2026 | [`ifp-donnee-indicateur/`](ifp-donnee-indicateur/) |
 
-Newsletter: https://cleandataarchitecture.substack.com/
+## Organisation d'un dossier
 
-## Autres supports
+- `index.html` — le support, en un seul fichier autonome
+- `*.pdf` — la version PDF
+- `visuals/` — les schémas en SVG (sources) et en PNG
+- `README.md` — le titre, le contexte et le plan
 
-- [`ifp-donnee-indicateur/`](ifp-donnee-indicateur/) — De la donnée à l'indicateur : gérer la transversalité · IFP School, Mastère Spécialisé, 2026
+Newsletter : https://cleandataarchitecture.substack.com/
